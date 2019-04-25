@@ -12,6 +12,7 @@ api = Blueprint('api',__name__)
 def after_request(response):
     header = response.headers
     header['Access-Control-Allow-Origin'] = '*'
+    header['content-type'] = '*'
     return response
 
 
