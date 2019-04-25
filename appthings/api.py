@@ -7,6 +7,14 @@ from appthings.models import *
 
 api = Blueprint('api',__name__)
 
+
+@api.after_request # blueprint can also be app~~
+def after_request(response):
+    header = response.headers
+    header['Access-Control-Allow-Origin'] = '*'
+    return response
+
+
 apps = Api(api)
 apps.add_resource(Messages, '/Messages')
 apps.add_resource(ChangePassword, '/change_password/<token>')
