@@ -155,6 +155,7 @@ class RequestPasswordChange(Resource):
         subject = "click if you want to change your password"
         send_email(current_user.email, subject, html)
 
+
 class UpdateSettings(Resource):
     method_decorators = [token_required]
 
