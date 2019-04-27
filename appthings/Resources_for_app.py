@@ -231,7 +231,8 @@ class UpdateSettings(Resource):
                     alert['variant'] = 'warning'
                     alert['text'] = 'warning'
                     return jsonify({'update_data': {}, 'alert': alert})
-                alert['test'] = 'success'
+                alert['variant'] = 'success'
+                alert['text'] = 'success'
                 return jsonify({'update_data': {}, 'alert': alert})
             except:
                 alert['variant'] = 'warning'
