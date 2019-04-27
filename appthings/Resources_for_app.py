@@ -154,6 +154,7 @@ class RequestPasswordChange(Resource):
         html = render_template('change_password_email.html', confirm_url=confirm_url)
         subject = "click if you want to change your password"
         send_email(current_user.email, subject, html)
+        return 'done'
 
 
 class UpdateSettings(Resource):
