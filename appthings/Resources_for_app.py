@@ -149,11 +149,11 @@ class RequestPasswordChange(Resource):
     method_decorators = [token_required]
 
     def post(self, current_user):
-        token = generate_password_change_token(current_user.email, current_app.config['PASSWORD_CHANGE_KEY'])
-        confirm_url = 'https://chatfrontend.herokuapp.com/#/settings/change/' + token
-        html = render_template('change_password_email.html', confirm_url=confirm_url)
-        subject = "click if you want to change your password"
-        send_email(current_user.email, subject, html)
+        # token = generate_password_change_token(current_user.email, current_app.config['PASSWORD_CHANGE_KEY'])
+        # confirm_url = 'https://chatfrontend.herokuapp.com/#/settings/change/' + token
+        # html = render_template('change_password_email.html', confirm_url=confirm_url)
+        # subject = "click if you want to change your password"
+        # send_email(current_user.email, subject, html)
         return 'done'
 
 
