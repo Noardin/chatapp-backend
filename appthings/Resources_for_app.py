@@ -177,6 +177,7 @@ class UpdateSettings(Resource):
                 filename = ''.join([random.choice(string.ascii_letters + string.digits)
                                     for n in range(5)]) + '_' + str(current_user.username) + '_profile_img'
                 newpath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename + '.jpg')
+                print(newpath)
                 if not oldfilename['profile_img'] == 'icons8-person-90':
                     os.renames(oldpath, newpath)
                 with open(newpath, 'wb') as f:
