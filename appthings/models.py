@@ -151,7 +151,7 @@ class MessagesData(Base):
                                       MessagesData.username,
                                       MessagesData.id, MessagesData.date,
                                       MessagesData.audio,
-                                      Reakce.like,Reakce.angry, Reakce.XD).join(Settings).join(Reakce).order_by(cls.date).all()
+                                      Reakce.lk,Reakce.ang, Reakce.xd).join(Settings).join(Reakce).order_by(cls.date).all()
         messages = MessagesSchema(many=True).dump(messages).data
         print(messages)
         for message in messages:
