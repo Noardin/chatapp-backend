@@ -147,7 +147,7 @@ class MessagesData(Base):
             print('appending')
             dates.append(str(datetime.date.today()))
             print(dates)
-        messages = not session_.query(MessagesData, Settings.profile_img, Settings.nickname, MessagesData.message,
+        messages = session_.query(MessagesData, Settings.profile_img, Settings.nickname, MessagesData.message,
                                       MessagesData.username,
                                       MessagesData.id, MessagesData.date,
                                       MessagesData.audio,
@@ -171,7 +171,7 @@ class MessagesData(Base):
         username = kwargs.get('username')
         audio = kwargs.get('audio')
         settings_id = session_.query(User.id).filter_by(username=username).first()
-        reakce = Reakce(like=Column.default, XD=Column.default, angry=Column.default)
+        reakce = Reakce(lk=int(0), xd= int(0), ang= int(0))
         session_.add(reakce)
         session_.flush()
         reakce_id = reakce.id
@@ -195,16 +195,16 @@ class MessagesData(Base):
 
 class Reakce(Base):
     __tablename__ = "reakce"
-    id = Column(Integer, primary_key=True)
-    like = Column(Integer, default=0)
-    XD = Column(Integer, default=0)
-    angry = Column(Integer, default=0)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    lk = Column(Integer)
+    xd = Column(Integer)
+    ang = Column(Integer)
     message = relationship(MessagesData, back_populates ='reakce')
 
-    def __init__(self, like, XD, angry):
-        self.like = like,
-        self.angry = angry,
-        self.XD = XD,
+    def __init__(self, lk, xd, ang):
+        self.lk = lk,
+        self.ang = ang,
+        self.xd = xd,
 
 
 
