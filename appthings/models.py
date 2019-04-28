@@ -127,13 +127,16 @@ class MessagesData(Base):
     audio = Column(Boolean)
     settings_id = Column(Integer, ForeignKey('settings.id'))
     settings = relationship('Settings')
+    reakce_id = Column(Integer, ForeignKey('reakce.id'))
+    reakce = relationship('Reakce')
 
-    def __init__(self, username, message, audio, settings_id):
+    def __init__(self, username, message, audio, settings_id, reakce_id):
         self.audio = audio
         self.username = username
         self.message = message
         self.date = datetime.date.today()
         self.settings_id = settings_id
+        self.reakce_id = reakce_id
 
     @classmethod
     def getALL(cls,user):
@@ -144,8 +147,11 @@ class MessagesData(Base):
             print('appending')
             dates.append(str(datetime.date.today()))
             print(dates)
-        messages = session_.query(MessagesData, Settings.profile_img,Settings.nickname, MessagesData.message, MessagesData.username,
-                                  MessagesData.id,MessagesData.date, MessagesData.audio).join(Settings).order_by(cls.date).all()
+        messages = not session_.query(MessagesData, Settings.profile_img, Settings.nickname, MessagesData.message,
+                                      MessagesData.username,
+                                      MessagesData.id, MessagesData.date,
+                                      MessagesData.audio,
+                                      Reakce.like,Reakce.angry, Reakce.XD).join(Settings).join(Reakce).order_by(cls.date).all()
         messages = MessagesSchema(many=True).dump(messages).data
         print(messages)
         for message in messages:
@@ -165,8 +171,12 @@ class MessagesData(Base):
         username = kwargs.get('username')
         audio = kwargs.get('audio')
         settings_id = session_.query(User.id).filter_by(username=username).first()
+        reakce = Reakce(like=Column.default, XD=Column.default, angry=Column.default)
+        session_.add(reakce)
+        session_.flush()
+        reakce_id = reakce.id
         message = MessagesData(message=str(msg), username=str(username),
-                               audio=bool(audio), settings_id=int(settings_id.id))
+                               audio=bool(audio), settings_id=int(settings_id.id), reakce_id=int(reakce_id))
         session_.add(message)
         session_.flush()
         message_id = message.id
@@ -177,7 +187,26 @@ class MessagesData(Base):
         kwargs['email'] = userdata['email']
         kwargs['profile_img'] = userdata['profile_img']
         kwargs['nickname'] = userdata['nickname']
+        kwargs['reakce'] = {'like': 0,
+                            'XD': 0,
+                            'angry': 0}
         return kwargs
+
+
+class Reakce(Base):
+    __tablename__ = "reakce"
+    id = Column(Integer, primary_key=True)
+    like = Column(Integer, default=0)
+    XD = Column(Integer, default=0)
+    angry = Column(Integer, default=0)
+    message = relationship(MessagesData, back_populates ='reakce')
+
+    def __init__(self, like, XD, angry):
+        self.like = like,
+        self.angry = angry,
+        self.XD = XD,
+
+
 
 class Settings(Base):
     __tablename__ = "settings"
@@ -187,7 +216,6 @@ class Settings(Base):
     user_id = Column(Integer, ForeignKey(User.id))
     user = relationship(User, back_populates='settings')
     message = relationship(MessagesData, back_populates='settings')
-
 
     def __init__(self, username, profile_img, nickname, user_id):
         self.username = username
@@ -228,6 +256,12 @@ class Settings(Base):
                 return {'changed': False}
 
 
+class ReakceSchema(ma.Schema):
+    like = fields.Integer()
+    XD = fields.Integer()
+    angry = fields.Integer()
+
+
 class MessagesSchema(ma.Schema):
     id = fields.String()
     username = fields.String()
@@ -236,6 +270,8 @@ class MessagesSchema(ma.Schema):
     audio = fields.Boolean()
     profile_img = fields.String()
     nickname= fields.String()
+    reakce = fields.Nested(ReakceSchema)
+
 
 
 class userSchema(ma.Schema):

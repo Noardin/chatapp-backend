@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../Flask_rest_test/.idea/Flask_rest_test.iml" filepath="$PROJECT_DIR$/../Flask_rest_test/.idea/Flask_rest_test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/chatapp-backendapi.iml" filepath="$PROJECT_DIR$/.idea/chatapp-backendapi.iml" />
     </modules>
   </component>
 </project>
