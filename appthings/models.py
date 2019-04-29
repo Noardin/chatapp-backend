@@ -124,21 +124,20 @@ class Reakce(Base):
     lk = Column(Integer)
     xd = Column(Integer)
     ang = Column(Integer)
-    message = relationship('MessagesData', back_populates ='reakce')
+    message_id = Column(Integer, ForeignKey('messages_data.id'))
+    message = relationship('MessagesData', back_populates='reakce')
 
-    def __init__(self, lk, xd, ang):
+    def __init__(self, lk, xd, ang, message_id):
         self.lk = lk,
         self.ang = ang,
         self.xd = xd,
+        self.message_id = message_id
 
     @classmethod
-    def insertmessageReaction(cls):
-        reakce = Reakce(lk=int(0), xd=int(0), ang=int(0))
+    def insertmessageReaction(cls, msg_id):
+        reakce = Reakce(lk=int(0), xd=int(0), ang=int(0), message_id=int(msg_id))
         session_.add(reakce)
-        session_.flush()
-        reakce_id = reakce.id
-        session_.commit()
-        return reakce_id
+
 
 
 
@@ -152,16 +151,14 @@ class MessagesData(Base):
     audio = Column(Boolean)
     settings_id = Column(Integer, ForeignKey('settings.id'))
     settings = relationship('Settings')
-    reakce_id = Column(Integer, ForeignKey('reactions.id'))
-    reakce = relationship('Reakce')
+    reakce = relationship('Reakce', back_populates='message', uselist=False)
 
-    def __init__(self, username, message, audio, settings_id, reakce_id):
+    def __init__(self, username, message, audio, settings_id):
         self.audio = audio
         self.username = username
         self.message = message
         self.date = datetime.date.today()
         self.settings_id = settings_id
-        self.reakce_id = reakce_id
 
     @classmethod
     def getALL(cls,user):
@@ -173,10 +170,10 @@ class MessagesData(Base):
             dates.append(str(datetime.date.today()))
             print(dates)
         messages = session_.query(MessagesData, Settings.profile_img, Settings.nickname, MessagesData.message,
-                                      MessagesData.username,
-                                      MessagesData.id, MessagesData.date,
-                                      MessagesData.audio,
-                                      Reakce.lk,Reakce.ang, Reakce.xd).join(Settings).join(Reakce).order_by(cls.date).all()
+                                  MessagesData.username,
+                                  MessagesData.id, MessagesData.date,
+                                  MessagesData.audio,
+                                  Reakce.lk, Reakce.ang, Reakce.xd).join(Settings).join(Reakce).order_by(cls.date).all()
         messages = MessagesSchema(many=True).dump(messages).data
         print(messages)
         for message in messages:
@@ -196,14 +193,14 @@ class MessagesData(Base):
         username = kwargs.get('username')
         audio = kwargs.get('audio')
         settings_id = session_.query(User.id).filter_by(username=username).first()
-        # zero = 0
-        # reakce_id = Reakce.insertmessageReaction()
         message = MessagesData(message=str(msg), username=str(username),
-                               audio=bool(audio), settings_id=int(settings_id.id), reakce_id=int(0))
+                               audio=bool(audio), settings_id=int(settings_id.id))
         session_.add(message)
         session_.flush()
         message_id = message.id
+        Reakce.insertmessageReaction(message_id)
         session_.commit()
+
         userdata = User.getUserData(username)
         kwargs['msg_id'] = message_id
         kwargs['date'] = str(datetime.date.today())
