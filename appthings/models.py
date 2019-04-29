@@ -199,7 +199,7 @@ class MessagesData(Base):
         # zero = 0
         # reakce_id = Reakce.insertmessageReaction()
         message = MessagesData(message=str(msg), username=str(username),
-                               audio=bool(audio), settings_id=int(settings_id.id), reakce_id=int(reakce_id))
+                               audio=bool(audio), settings_id=int(settings_id.id), reakce_id=int(0))
         session_.add(message)
         session_.flush()
         message_id = message.id
