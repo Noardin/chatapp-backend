@@ -121,9 +121,9 @@ class User(Base):
 class Reakce(Base):
     __tablename__ = "reactions"
     id = Column(Integer, primary_key=True)
-    lk = Column(Integer, nullable=False)
-    xd = Column(Integer, nullable=False)
-    ang = Column(Integer, nullable=False)
+    lk = Column(String, nullable=False)
+    xd = Column(String, nullable=False)
+    ang = Column(String, nullable=False)
     message_id = Column(Integer, ForeignKey('messages_data.id'))
     message = relationship('MessagesData', back_populates='reakce')
 
@@ -135,7 +135,7 @@ class Reakce(Base):
 
     @classmethod
     def insertmessageReaction(cls, msg_id):
-        reakce = Reakce(lk=int(0), xd=int(0), ang=int(0), message_id=int(msg_id))
+        reakce = Reakce(lk='0', xd='0', ang='0', message_id=int(msg_id))
         session_.add(reakce)
 
 
