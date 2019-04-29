@@ -121,9 +121,9 @@ class User(Base):
 class Reakce(Base):
     __tablename__ = "reactions"
     id = Column(Integer, primary_key=True)
-    lk = Column(Integer)
-    xd = Column(Integer)
-    ang = Column(Integer)
+    lk = Column(Integer, nullable=False)
+    xd = Column(Integer, nullable=False)
+    ang = Column(Integer, nullable=False)
     message_id = Column(Integer, ForeignKey('messages_data.id'))
     message = relationship('MessagesData', back_populates='reakce')
 
