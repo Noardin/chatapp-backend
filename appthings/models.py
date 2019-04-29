@@ -117,9 +117,10 @@ class User(Base):
                 msg = 'You have confirmed your account. Thanks!'
                 return render_template('activate_template.html', msg=msg)
 
+
 class Reakce(Base):
-    __tablename__ = "reakce"
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    __tablename__ = "reactions"
+    id = Column(Integer, primary_key=True)
     lk = Column(Integer)
     xd = Column(Integer)
     ang = Column(Integer)
@@ -151,7 +152,7 @@ class MessagesData(Base):
     audio = Column(Boolean)
     settings_id = Column(Integer, ForeignKey('settings.id'))
     settings = relationship('Settings')
-    reakce_id = Column(Integer, ForeignKey('reakce.id'))
+    reakce_id = Column(Integer, ForeignKey('reactions.id'))
     reakce = relationship('Reakce')
 
     def __init__(self, username, message, audio, settings_id, reakce_id):
