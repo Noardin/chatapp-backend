@@ -173,15 +173,16 @@ class MessagesData(Base):
         settings_id = session_.query(User.id).filter_by(username=username).first()
         zero = 0
         reakce = Reakce(lk=int(zero), xd= int(zero), ang= int(zero))
-        session_.add(reakce)
-        session_.flush()
-        session_.commit()
-        reakce_id = reakce.id
+
         message = MessagesData(message=str(msg), username=str(username),
-                               audio=bool(audio), settings_id=int(settings_id.id), reakce_id=int(reakce_id))
+                               audio=bool(audio), settings_id=int(settings_id.id), reakce_id=int(zero))
+        session_.add(reakce)
+
         session_.add(message)
         session_.flush()
+        reakce_id = reakce.id
         message_id = message.id
+        message.reakce_id = reakce_id
         session_.commit()
         userdata = User.getUserData(username)
         kwargs['msg_id'] = message_id
