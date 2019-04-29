@@ -196,8 +196,8 @@ class MessagesData(Base):
         username = kwargs.get('username')
         audio = kwargs.get('audio')
         settings_id = session_.query(User.id).filter_by(username=username).first()
-        zero = 0
-        reakce_id = Reakce.insertmessageReaction()
+        # zero = 0
+        # reakce_id = Reakce.insertmessageReaction()
         message = MessagesData(message=str(msg), username=str(username),
                                audio=bool(audio), settings_id=int(settings_id.id), reakce_id=int(reakce_id))
         session_.add(message)
