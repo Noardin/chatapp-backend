@@ -172,7 +172,7 @@ class MessagesData(Base):
         audio = kwargs.get('audio')
         settings_id = session_.query(User.id).filter_by(username=username).first()
         zero = 0
-        reakce = Reakce(lk=int(zero), xd= int(zero), ang= int(zero))
+        reakce = Reakce(lk=str(zero), xd= str(zero), ang=str(zero))
         session_.add(reakce)
         session_.flush()
         reakce_id = reakce.id
@@ -197,9 +197,9 @@ class MessagesData(Base):
 class Reakce(Base):
     __tablename__ = "reakce"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    lk = Column(Integer)
-    xd = Column(Integer)
-    ang = Column(Integer)
+    lk = Column(String)
+    xd = Column(String)
+    ang = Column(String)
     message = relationship(MessagesData, back_populates ='reakce')
 
     def __init__(self, lk, xd, ang):
