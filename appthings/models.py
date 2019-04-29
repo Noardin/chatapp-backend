@@ -117,6 +117,30 @@ class User(Base):
                 msg = 'You have confirmed your account. Thanks!'
                 return render_template('activate_template.html', msg=msg)
 
+class Reakce(Base):
+    __tablename__ = "reakce"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    lk = Column(Integer)
+    xd = Column(Integer)
+    ang = Column(Integer)
+    message = relationship('MessagesData', back_populates ='reakce')
+
+    def __init__(self, lk, xd, ang):
+        self.lk = lk,
+        self.ang = ang,
+        self.xd = xd,
+
+    @classmethod
+    def insertmessageReaction(cls):
+        reakce = Reakce(lk=int(0), xd=int(0), ang=int(0))
+        session_.add(reakce)
+        session_.flush()
+        reakce_id = reakce.id
+        session_.commit()
+        return reakce_id
+
+
+
 class MessagesData(Base):
     __tablename__ = "messages_data"
 
@@ -172,17 +196,12 @@ class MessagesData(Base):
         audio = kwargs.get('audio')
         settings_id = session_.query(User.id).filter_by(username=username).first()
         zero = 0
-        reakce = Reakce(lk=int(zero), xd= int(zero), ang= int(zero))
-
+        reakce_id = Reakce.insertmessageReaction()
         message = MessagesData(message=str(msg), username=str(username),
-                               audio=bool(audio), settings_id=int(settings_id.id), reakce_id=int(zero))
-        session_.add(reakce)
-
+                               audio=bool(audio), settings_id=int(settings_id.id), reakce_id=int(reakce_id))
         session_.add(message)
         session_.flush()
-        reakce_id = reakce.id
         message_id = message.id
-        message.reakce_id = reakce_id
         session_.commit()
         userdata = User.getUserData(username)
         kwargs['msg_id'] = message_id
@@ -194,21 +213,6 @@ class MessagesData(Base):
                             'XD': 0,
                             'angry': 0}
         return kwargs
-
-
-class Reakce(Base):
-    __tablename__ = "reakce"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    lk = Column(Integer)
-    xd = Column(Integer)
-    ang = Column(Integer)
-    message = relationship(MessagesData, back_populates ='reakce')
-
-    def __init__(self, lk, xd, ang):
-        self.lk = lk,
-        self.ang = ang,
-        self.xd = xd,
-
 
 
 class Settings(Base):
@@ -260,9 +264,9 @@ class Settings(Base):
 
 
 class ReakceSchema(ma.Schema):
-    like = fields.Integer()
-    XD = fields.Integer()
-    angry = fields.Integer()
+    lk = fields.Integer()
+    xd = fields.Integer()
+    ang = fields.Integer()
 
 
 class MessagesSchema(ma.Schema):
@@ -272,7 +276,7 @@ class MessagesSchema(ma.Schema):
     date = fields.Date()
     audio = fields.Boolean()
     profile_img = fields.String()
-    nickname= fields.String()
+    nickname = fields.String()
     reakce = fields.Nested(ReakceSchema)
 
 
