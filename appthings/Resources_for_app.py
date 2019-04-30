@@ -54,7 +54,6 @@ def token_required(f):
     return _verify
 
 
-
 class ChangePassword(Resource):
     method_decorators = [token_required]
 
@@ -65,6 +64,7 @@ class ChangePassword(Resource):
 
         else:
             return jsonify({'authenticated': True, 'email': email})
+
 
 class Login(Resource):
     def post(self):
