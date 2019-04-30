@@ -11,6 +11,9 @@ def joined():
     join_room('chatroom')
     print('joined')
 
+@socketio.on('disconnect')
+def diss():
+    print('disconnected')
 
 def inicialize():
     app = Flask('rest_api', static_folder='/static')
