@@ -4,9 +4,17 @@ from flask_restful import Api
 from appthings.Resources_for_app import Messages, update_userData, Register,\
     ChangePassword, UpdateSettings, RequestPasswordChange, Login
 from appthings.models import *
-
+from appthings.inicializApp import *
+from flask_socketio import join_room, send
 api = Blueprint('api',__name__)
 
+
+@socketio.on('join')
+def joined(data):
+    username = data['username']
+    room = data['room']
+    join_room(room)
+    send(username + ' has entered the room.', room=room)
 
 @api.after_request # blueprint can also be app~~
 def after_request(response):

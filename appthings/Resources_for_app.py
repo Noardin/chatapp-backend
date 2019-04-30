@@ -124,7 +124,7 @@ class Messages(Resource):
                 data['message'] = filename
         msg = MessagesData.insertMSG(**data)
         msg = json.dumps(msg)
-        inicializApp.socketio.emit('my response', msg)
+        inicializApp.socketio.emit('my response', msg, room='chatroom')
         return ''
 
 
