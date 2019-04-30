@@ -8,6 +8,8 @@ from appthings.events import *
 from functools import wraps, update_wrapper
 from appthings import inicializApp
 
+
+
 alert = {
         'version': 'login',
         'variant': 'warning',
