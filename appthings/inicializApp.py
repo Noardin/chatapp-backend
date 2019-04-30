@@ -8,7 +8,7 @@ socketio = SocketIO()
 mailn = Mail()
 @socketio.on('join')
 def joined():
-    join_room('chatapp')
+    join_room('chatroom')
     print('joined')
 
 
