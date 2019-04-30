@@ -118,28 +118,6 @@ class User(Base):
                 return render_template('activate_template.html', msg=msg)
 
 
-class Reakce(Base):
-    __tablename__ = "reactions"
-    id = Column(Integer, primary_key=True)
-    lk = Column(String, nullable=False)
-    xd = Column(String, nullable=False)
-    ang = Column(String, nullable=False)
-    message_id = Column(Integer, ForeignKey('messages_data.id'))
-    message = relationship('MessagesData', back_populates='reakce')
-
-    def __init__(self, lk, xd, ang, message_id):
-        self.lk = lk,
-        self.ang = ang,
-        self.xd = xd,
-        self.message_id = message_id
-
-    @classmethod
-    def insertmessageReaction(cls, msg_id):
-        reakce = Reakce(lk='0', xd='0', ang='0', message_id=int(msg_id))
-        session_.add(reakce)
-
-
-
 
 class MessagesData(Base):
     __tablename__ = "messages_data"
@@ -149,16 +127,21 @@ class MessagesData(Base):
     message = Column(String)
     date = Column(Date, nullable=False)
     audio = Column(Boolean)
+    like = Column(Integer)
+    XD = Column(Integer)
+    angry = Column(Integer)
     settings_id = Column(Integer, ForeignKey('settings.id'))
     settings = relationship('Settings')
-    reakce = relationship('Reakce', back_populates='message', uselist=False)
 
-    def __init__(self, username, message, audio, settings_id):
+    def __init__(self, username, message, audio, settings_id, angry, XD, like):
         self.audio = audio
         self.username = username
         self.message = message
         self.date = datetime.date.today()
         self.settings_id = settings_id
+        self.angry = angry
+        self.XD = XD
+        self.like = like
 
     @classmethod
     def getALL(cls,user):
@@ -172,8 +155,8 @@ class MessagesData(Base):
         messages = session_.query(MessagesData, Settings.profile_img, Settings.nickname, MessagesData.message,
                                   MessagesData.username,
                                   MessagesData.id, MessagesData.date,
-                                  MessagesData.audio,
-                                  Reakce.lk, Reakce.ang, Reakce.xd).join(Settings).join(Reakce).order_by(cls.date).all()
+                                  MessagesData.audio, MessagesData.like, MessagesData.XD, MessagesData.angry
+                                  ).join(Settings).order_by(cls.date).all()
         messages = MessagesSchema(many=True).dump(messages).data
         print(messages)
         for message in messages:
@@ -194,11 +177,10 @@ class MessagesData(Base):
         audio = kwargs.get('audio')
         settings_id = session_.query(User.id).filter_by(username=username).first()
         message = MessagesData(message=str(msg), username=str(username),
-                               audio=bool(audio), settings_id=int(settings_id.id))
+                               audio=bool(audio), settings_id=int(settings_id.id), like=0, XD=0, angry=0)
         session_.add(message)
         session_.flush()
         message_id = message.id
-        Reakce.insertmessageReaction(message_id)
         session_.commit()
 
         userdata = User.getUserData(username)
