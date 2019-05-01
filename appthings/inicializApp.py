@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, session
 from appthings.api import api
 from flask_socketio import SocketIO
 from flask_mail import Mail
@@ -9,12 +9,12 @@ mailn = Mail()
 @socketio.on('join')
 def joined():
     join_room('chatroom')
-    print('joined')
+    print('joined', session.get('recieve_count'))
 
 @socketio.on('leave')
 def diss():
     leave_room('chatroom')
-    print('disconnected')
+    print('disconnected',session.get('recieve_count'))
 
 def inicialize():
     app = Flask('rest_api', static_folder='/static')
