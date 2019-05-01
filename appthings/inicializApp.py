@@ -2,7 +2,7 @@ from flask import Flask
 from appthings.api import api
 from flask_socketio import SocketIO
 from flask_mail import Mail
-from flask_socketio import join_room, send
+from flask_socketio import join_room, send, leave_room
 
 socketio = SocketIO()
 mailn = Mail()
@@ -11,8 +11,9 @@ def joined():
     join_room('chatroom')
     print('joined')
 
-@socketio.on('disconnect')
+@socketio.on('leave')
 def diss():
+    leave_room('chatroom')
     print('disconnected')
 
 def inicialize():
