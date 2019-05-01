@@ -2,19 +2,19 @@ from flask import Flask, session
 from appthings.api import api
 from flask_socketio import SocketIO
 from flask_mail import Mail
-from flask_socketio import join_room, send, leave_room
+from flask_socketio import join_room,leave_room
 
 socketio = SocketIO()
 mailn = Mail()
 @socketio.on('join')
 def joined():
     join_room('chatroom')
-    print('joined', session.get('recieve_count'))
+    print('joined')
 
 @socketio.on('leave')
 def diss():
     leave_room('chatroom')
-    print('disconnected',session.get('recieve_count'))
+    print('disconnected')
 
 def inicialize():
     app = Flask('rest_api', static_folder='/static')
