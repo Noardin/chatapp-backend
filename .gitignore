@@ -2,8 +2,6 @@
 node_modules
 /dist
 
-chat.db
-
 # local env files
 .env.local
 .env.*.local
