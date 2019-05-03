@@ -130,6 +130,15 @@ class Messages(Resource):
         return ''
 
 
+class UpdateReactions(Resource):
+    def post(self):
+        data = request.get_json()
+        update = MessagesData.updateReaction(**data)
+        if update['updated']:
+            return 'updated'
+        else:
+            return 'failed'
+
 class Register(Resource):
     def options(self):
         return{}

@@ -132,6 +132,11 @@ class MessagesData(Base):
     angry = Column(Integer)
     settings_id = Column(Integer, ForeignKey('settings.id'))
     settings = relationship('Settings')
+    reactions = {
+        'like': like,
+        'XD': XD,
+        'angry': angry
+    }
 
     def __init__(self, username, message, audio, settings_id, angry, XD, like):
         self.audio = audio
@@ -142,6 +147,11 @@ class MessagesData(Base):
         self.angry = angry
         self.XD = XD
         self.like = like
+        self.reactions = {
+            'like':like,
+            'XD':XD,
+            'angry':angry
+        }
 
     @classmethod
     def getALL(cls,user):
@@ -155,8 +165,9 @@ class MessagesData(Base):
         messages = session_.query(MessagesData, Settings.profile_img, Settings.nickname, MessagesData.message,
                                   MessagesData.username,
                                   MessagesData.id, MessagesData.date,
-                                  MessagesData.audio, MessagesData.like, MessagesData.XD, MessagesData.angry
+                                  MessagesData.audio, MessagesData.reactions
                                   ).join(Settings).order_by(cls.date).all()
+
         messages = MessagesSchema(many=True).dump(messages).data
         print(messages)
         for message in messages:
@@ -193,6 +204,19 @@ class MessagesData(Base):
                             'XD': 0,
                             'angry': 0}
         return kwargs
+    @classmethod
+    def updateReaction(cls, **kwargs):
+        try:
+            like = kwargs.get('like')
+            XD = kwargs.get('XD')
+            angry = kwargs.get('angry')
+            msg_id = kwargs.get('msg_id')
+
+            session_.query(MessagesData).filter_by(id=msg_id).update({'like':like, 'XD':XD, 'angry':angry})
+            return {'updated':True}
+        except exc.IntegrityError:
+            return {'updated':False}
+
 
 
 class Settings(Base):
@@ -257,7 +281,7 @@ class MessagesSchema(ma.Schema):
     audio = fields.Boolean()
     profile_img = fields.String()
     nickname = fields.String()
-    reakce = fields.Nested(ReakceSchema)
+    reactions = fields.Nested(ReakceSchema)
 
 
 
