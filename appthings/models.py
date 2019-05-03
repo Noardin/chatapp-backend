@@ -132,11 +132,6 @@ class MessagesData(Base):
     angry = Column(Integer)
     settings_id = Column(Integer, ForeignKey('settings.id'))
     settings = relationship('Settings')
-    reactions = {
-        'like': like,
-        'XD': XD,
-        'angry': angry
-    }
 
     def __init__(self, username, message, audio, settings_id, angry, XD, like):
         self.audio = audio
@@ -147,11 +142,6 @@ class MessagesData(Base):
         self.angry = angry
         self.XD = XD
         self.like = like
-        self.reactions = {
-            'like':like,
-            'XD':XD,
-            'angry':angry
-        }
 
     @classmethod
     def getALL(cls,user):
@@ -165,12 +155,17 @@ class MessagesData(Base):
         messages = session_.query(MessagesData, Settings.profile_img, Settings.nickname, MessagesData.message,
                                   MessagesData.username,
                                   MessagesData.id, MessagesData.date,
-                                  MessagesData.audio, MessagesData.reactions
+                                  MessagesData.audio, MessagesData.like, MessagesData.XD, MessagesData.angry
                                   ).join(Settings).order_by(cls.date).all()
 
         messages = MessagesSchema(many=True).dump(messages).data
         print(messages)
         for message in messages:
+            message['reakce'] = {
+                'like':message['like'],
+                'XD':message['XD'],
+                'angry':message['angry']
+            }
             if message['username'] == user.username:
                 message['you'] = True
             else:
@@ -281,7 +276,9 @@ class MessagesSchema(ma.Schema):
     audio = fields.Boolean()
     profile_img = fields.String()
     nickname = fields.String()
-    reactions = fields.Nested(ReakceSchema)
+    like = fields.Integer()
+    XD = fields.Integer()
+    angry = fields.Integer()
 
 
 
