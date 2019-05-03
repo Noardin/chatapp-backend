@@ -208,7 +208,7 @@ class MessagesData(Base):
             like = kwargs.get('like')
             XD = kwargs.get('XD')
             angry = kwargs.get('angry')
-            msg_id = kwargs.get('msg_id')
+            msg_id = kwargs.get('id')
 
             session_.query(MessagesData).filter_by(id=msg_id).update({'like':like, 'XD':XD, 'angry':angry})
             return {'updated':True, 'reakce':kwargs}
