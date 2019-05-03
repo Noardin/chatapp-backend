@@ -166,6 +166,9 @@ class MessagesData(Base):
                 'XD':message['XD'],
                 'angry':message['angry']
             }
+            message.pop('like')
+            message.pop('XD')
+            message.pop('angry')
             if message['username'] == user.username:
                 message['you'] = True
             else:
@@ -208,7 +211,7 @@ class MessagesData(Base):
             msg_id = kwargs.get('msg_id')
 
             session_.query(MessagesData).filter_by(id=msg_id).update({'like':like, 'XD':XD, 'angry':angry})
-            return {'updated':True}
+            return {'updated':True, 'reakce':kwargs}
         except exc.IntegrityError:
             return {'updated':False}
 

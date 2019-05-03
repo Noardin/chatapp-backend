@@ -16,6 +16,7 @@ def diss():
     leave_room('chatroom')
     print('disconnected')
 
+
 def inicialize():
     app = Flask('rest_api', static_folder='/static')
     app.config.from_object('appthings.config.BaseConfig')

@@ -34,11 +34,11 @@ apps.add_resource(UpdateReactions, '/update_reactions')
 def confirm_email(token):
     return User.confirm(token)
 
+
 @api.route('/get/<file>')
 @cross_origin(origin='*', headers=['Content-Type', 'Authorization'])
 def get_image_by_URL(file):
     img = send_from_directory('static','img/profile_img/'+file)
-
     return img
 
 

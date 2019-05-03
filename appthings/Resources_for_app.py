@@ -135,6 +135,7 @@ class UpdateReactions(Resource):
         data = request.get_json()
         update = MessagesData.updateReaction(**data)
         if update['updated']:
+            inicializApp.socketio.emit('updatereactions', update['reakce'], room='chatroom', broadcast=True)
             return 'updated'
         else:
             return 'failed'
