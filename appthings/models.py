@@ -191,7 +191,7 @@ class MessagesData(Base):
         session_.flush()
         message_id = message.id
         session_.commit()
-
+        createreactionstables(message_id)
         userdata = User.getUserData(username)
         kwargs['msg_id'] = message_id
         kwargs['date'] = str(datetime.date.today())
@@ -265,11 +265,6 @@ class Settings(Base):
                 return {'changed': False}
 
 
-class ReakceSchema(ma.Schema):
-    lk = fields.Integer()
-    xd = fields.Integer()
-    ang = fields.Integer()
-
 
 class MessagesSchema(ma.Schema):
     id = fields.String()
@@ -284,7 +279,6 @@ class MessagesSchema(ma.Schema):
     angry = fields.Integer()
 
 
-
 class userSchema(ma.Schema):
     id = fields.Integer()
     username = fields.String()
@@ -295,9 +289,23 @@ class userSchema(ma.Schema):
     password = fields.String()
 
 
+def createreactionstables(msg_id):
+    tablename = '_reactions_for_'+msg_id
+    kinds = ['like','angry','XD']
+    for kind in kinds:
+        ReactionsTableBlueprint = {
+            '__tablename__': kind+tablename,
+        }
+        class ReactionsClass():
+            id = Column(Integer, primary_key=True)
+            user_id = Column(Integer, ForeignKey(User.id))
+            msg_id = Column(Integer, ForeignKey(MessagesData.id))
 
-
-
+            def __init__(self, user_id):
+                self.user_id = user_id
+                self.msg_id = msg_id
+        TableClass = type('New'+tablename,(Base,ReactionsClass), ReactionsTableBlueprint)
+        TableClass.__table__.create(bind=engine)
 
 
 Base.metadata.create_all(engine)
