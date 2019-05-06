@@ -1,7 +1,7 @@
 
 from sqlalchemy import create_engine, ForeignKey, DateTime, Boolean
-from sqlalchemy import Column, Date, Integer, String, column, exc
-from sqlalchemy.orm import sessionmaker, scoped_session, column_property
+from sqlalchemy import Column, Date, Integer, String, column, exc, Table, MetaData
+from sqlalchemy.orm import sessionmaker, scoped_session, column_property, mapper
 from sqlalchemy.ext.declarative import declarative_base
 from appthings.hashes import verify_hash, set_hash
 from flask_marshmallow import Marshmallow
@@ -15,7 +15,7 @@ engine = create_engine('sqlite:///chat.db', echo=True)
 session_ = scoped_session(sessionmaker(bind=engine))
 Base = declarative_base()
 ma = Marshmallow()
-
+metadata = MetaData()
 
 ########################################################################
 class User(Base):
@@ -209,8 +209,9 @@ class MessagesData(Base):
             XD = kwargs.get('XD')
             angry = kwargs.get('angry')
             msg_id = kwargs.get('id')
-
+            reactionstablename = '_reactions_for_'+msg_id
             session_.query(MessagesData).filter_by(id=msg_id).update({'like':like, 'XD':XD, 'angry':angry})
+            likes = 'like'+reactionstablename
             return {'updated':True, 'reakce':kwargs}
         except exc.IntegrityError:
             return {'updated':False}
@@ -289,24 +290,24 @@ class userSchema(ma.Schema):
     password = fields.String()
 
 
+class ReactionsClass(Base):
+    def __init__(self, user_id):
+        self.user_id = user_id
+
+
 def createreactionstables(msg_id):
     msg_id = str(msg_id)
     tablename = '_reactions_for_'+msg_id
     kinds = ['like','angry','XD']
+
     for kind in kinds:
-        class ReactionsClass(Base):
-
-            __tablename__ = kind+tablename
-
-            id = Column(Integer, primary_key=True)
-            user_id = Column(Integer, ForeignKey(User.id))
-            msg_id = Column(Integer, ForeignKey(MessagesData.id))
-
-            def __init__(self, user_id):
-                self.user_id = user_id
-                self.msg_id = msg_id
-
-        ReactionsClass.__table__.create(bind=engine)
+        table = {
+            '__tablename__': kind + tablename,
+            'id': Column(Integer, primary_key=True),
+            'user_id': Column(Integer, ForeignKey(User.id))
+        }
+        NewClass = type('Class' + kind + tablename, (Base, ReactionsClass), table)
+        NewClass.__table__.create(bind=engine)
 
 
 Base.metadata.create_all(engine)
