@@ -227,7 +227,7 @@ class MessagesData(Base):
 
                 print(kwargs['changed'])
                 newreactionsclass = mapperforreactions[kwargs['changed']]
-                engine.execute("insert into "+newreactionsclass+" values(?)",str(user_id))
+                engine.execute("insert into "+newreactionsclass+"(user_id) values(?)", str(user_id))
                 if not was =='':
                     engine.execute("delete * from " + mapperforreactions[was] + " where user_id=" + str(user_id))
                     session_.query(MessagesData).filter_by(id=msg_id).update(
