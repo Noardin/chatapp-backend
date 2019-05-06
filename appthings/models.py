@@ -16,7 +16,8 @@ session_ = scoped_session(sessionmaker(bind=engine))
 Base = declarative_base()
 ma = Marshmallow()
 metadata = MetaData()
-
+conn = engine.connect()
+trans = conn.begin()
 ########################################################################
 class User(Base):
     """"""
@@ -204,6 +205,7 @@ class MessagesData(Base):
         return kwargs
     @classmethod
     def updateReaction(cls, **kwargs):
+
         try:
 
             msg_id = kwargs['reakce'].get('id')
@@ -211,8 +213,7 @@ class MessagesData(Base):
             user_id = userSchema().dump(user_id).data['id']
             was = ''
             tablename = '_reactions_for_' + str(msg_id)
-            conn = engine.connect()
-            trans = conn.begin()
+
             mapperforreactions = {
                 'like': 'like'+tablename,
                 'angry': 'angry' + tablename,
@@ -229,15 +230,17 @@ class MessagesData(Base):
                 print(kwargs['changed'])
                 newreactionsclass = mapperforreactions[kwargs['changed']]
                 conn.execute("insert into "+newreactionsclass+"(user_id) values(?)", str(user_id))
+                trans.commit()
                 if not was =='':
                     conn.execute("delete * from " + mapperforreactions[was] + " where user_id=" + str(user_id))
+                    trans.commit()
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']:kwargs['reakce'][kwargs['changed']], was: kwargs['reakce'][was]-1})
                     kwargs['reakce'][was] = kwargs['reakce'][was]-1
                 else:
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']: kwargs['reakce'][kwargs['changed']]})
-            trans.commit()
+            session_.commit()
             conn.close()
 
             return {'updated':True, 'reakce':kwargs['reakce']}
