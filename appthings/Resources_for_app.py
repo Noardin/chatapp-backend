@@ -131,8 +131,10 @@ class Messages(Resource):
 
 
 class UpdateReactions(Resource):
-    def post(self):
+    method_decorators = [token_required]
+    def post(self, current_user):
         data = request.get_json()
+        data['current_user'] = current_user
         update = MessagesData.updateReaction(**data)
         if update['updated']:
             inicializApp.socketio.emit('updatereactions', update['reakce'], room='chatroom', broadcast=True)

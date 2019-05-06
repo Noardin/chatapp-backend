@@ -205,15 +205,27 @@ class MessagesData(Base):
     @classmethod
     def updateReaction(cls, **kwargs):
         try:
-            like = kwargs.get('like')
-            XD = kwargs.get('XD')
-            angry = kwargs.get('angry')
-            msg_id = kwargs.get('id')
-            reactionstablename = '_reactions_for_'+msg_id
-            session_.query(MessagesData).filter_by(id=msg_id).update({'like':like, 'XD':XD, 'angry':angry})
-            likes = 'like'+reactionstablename
-            return {'updated':True, 'reakce':kwargs}
+
+            msg_id = kwargs['reakce'].get('id')
+            user_id = session_.query(User.id).filter(User.username == kwargs['current_user'].username).first().get('id')
+            was = ''
+            mapperforreactions = getMapperforreactions(msg_id)
+            for key, value in mapperforreactions.items():
+                query = session_.query(value).filter_by(user_id=user_id)
+                if query.count() >0:
+                    was = key
+            if not kwargs['changed'] == was:
+                query = session_.query(mapperforreactions[was]).filter_by(user_id=user_id).first()
+                session_.delete(query)
+                newreactionsclass = mapperforreactions[kwargs['changed']]
+                session_.add(newreactionsclass(user_id=user_id))
+                session_.query(MessagesData).filter_by(id=msg_id).update({kwargs['changed']:kwargs['reakce'][kwargs['changed']], was: kwargs['reakce'][was]-1})
+                kwargs['reakce'][was] = kwargs['reakce'][was]-1
+            session_.commit()
+
+            return {'updated':True, 'reakce':kwargs['reakce']}
         except exc.IntegrityError:
+            print(exc.IntegrityError)
             return {'updated':False}
 
 
@@ -309,5 +321,18 @@ def createreactionstables(msg_id):
         NewClass = type('Class' + kind + tablename, (Base, ReactionsClass), table)
         NewClass.__table__.create(bind=engine)
 
-
+def getMapperforreactions(msg_id):
+    msg_id = str(msg_id)
+    mapperclasses ={}
+    tablename = '_reactions_for_' + msg_id
+    kinds = ['like', 'angry', 'XD']
+    for kind in kinds:
+        table = {
+            '__tablename__': kind + tablename,
+            'id': Column(Integer, primary_key=True),
+            'user_id': Column(Integer, ForeignKey(User.id))
+        }
+        NewClass = type('Class' + kind + tablename, (Base, ReactionsClass), table)
+        mapperclasses[kind] = NewClass
+    return mapperclasses
 Base.metadata.create_all(engine)
