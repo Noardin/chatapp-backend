@@ -296,7 +296,7 @@ def createreactionstables(msg_id):
     for kind in kinds:
         class ReactionsClass(Base):
 
-            __tablename__:kind+tablename
+            __tablename__ = kind+tablename
 
             id = Column(Integer, primary_key=True)
             user_id = Column(Integer, ForeignKey(User.id))
