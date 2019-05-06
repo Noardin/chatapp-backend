@@ -230,7 +230,6 @@ class MessagesData(Base):
                 print(kwargs['changed'])
                 newreactionsclass = mapperforreactions[kwargs['changed']]
                 conn.execute("insert into "+newreactionsclass+"(user_id) values(?)", str(user_id))
-                trans.commit()
                 if not was =='':
                     conn.execute("delete * from " + mapperforreactions[was] + " where user_id=" + str(user_id))
                     trans.commit()
