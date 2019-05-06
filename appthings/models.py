@@ -207,7 +207,8 @@ class MessagesData(Base):
         try:
 
             msg_id = kwargs['reakce'].get('id')
-            user_id = session_.query(User.id).filter(User.username == kwargs['current_user'].username).first().get('id')
+            user_id = session_.query(User.id).filter(User.username == kwargs['current_user'].username).first()
+            user_id = userSchema.dump(user_id).data
             was = ''
             mapperforreactions = getMapperforreactions(msg_id)
             for key, value in mapperforreactions.items():
