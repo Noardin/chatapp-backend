@@ -221,7 +221,6 @@ class MessagesData(Base):
             for key, value in mapperforreactions.items():
                 print(value)
                 query = conn.execute("select count(user_id) from "+value+" where user_id="+str(user_id)).scalar()
-                trans.commit()
                 print(query)
                 if query > 0:
                     was = key
