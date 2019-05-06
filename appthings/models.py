@@ -17,7 +17,7 @@ Base = declarative_base()
 ma = Marshmallow()
 metadata = MetaData()
 conn = engine.connect()
-trans = conn.begin()
+
 ########################################################################
 class User(Base):
     """"""
@@ -205,7 +205,7 @@ class MessagesData(Base):
         return kwargs
     @classmethod
     def updateReaction(cls, **kwargs):
-
+        trans = conn.begin()
         try:
 
             msg_id = kwargs['reakce'].get('id')
@@ -238,7 +238,7 @@ class MessagesData(Base):
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']:kwargs['reakce'][kwargs['changed']], was: kwargs['reakce'][was]-1})
                     kwargs['reakce'][was] = kwargs['reakce'][was]-1
-                    
+
                     print('after session')
                 else:
                     session_.query(MessagesData).filter_by(id=msg_id).update(
