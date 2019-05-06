@@ -219,7 +219,7 @@ class MessagesData(Base):
             }
             for key, value in mapperforreactions.items():
                 print(value)
-                query = engine.execute("select count user_id from "+value+" where user_id="+str(user_id))
+                query = engine.execute("select count(user_id) from "+value+" where user_id="+str(user_id)).scalar()
                 if query > 0:
                     was = key
             if not kwargs['changed'] == was:
