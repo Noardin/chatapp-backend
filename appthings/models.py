@@ -294,10 +294,10 @@ def createreactionstables(msg_id):
     tablename = '_reactions_for_'+msg_id
     kinds = ['like','angry','XD']
     for kind in kinds:
-        ReactionsTableBlueprint = {
-            '__tablename__': kind+tablename,
-        }
-        class ReactionsClass():
+        class ReactionsClass(Base):
+
+            __tablename__:kind+tablename
+
             id = Column(Integer, primary_key=True)
             user_id = Column(Integer, ForeignKey(User.id))
             msg_id = Column(Integer, ForeignKey(MessagesData.id))
@@ -305,8 +305,8 @@ def createreactionstables(msg_id):
             def __init__(self, user_id):
                 self.user_id = user_id
                 self.msg_id = msg_id
-        TableClass = type('New'+tablename,(Base,ReactionsClass), ReactionsTableBlueprint)
-        TableClass.__table__.create(bind=engine)
+
+        ReactionsClass.__table__.create(bind=engine)
 
 
 Base.metadata.create_all(engine)
