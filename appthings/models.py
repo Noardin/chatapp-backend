@@ -221,6 +221,7 @@ class MessagesData(Base):
             for key, value in mapperforreactions.items():
                 print(value)
                 query = conn.execute("select count(user_id) from "+value+" where user_id="+str(user_id)).scalar()
+                trans.commit()
                 print(query)
                 if query > 0:
                     was = key
@@ -239,6 +240,7 @@ class MessagesData(Base):
                 else:
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']: kwargs['reakce'][kwargs['changed']]})
+            trans.commit()
             conn.close()
 
             return {'updated':True, 'reakce':kwargs['reakce']}
