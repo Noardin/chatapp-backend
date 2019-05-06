@@ -239,7 +239,7 @@ class MessagesData(Base):
                 else:
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']: kwargs['reakce'][kwargs['changed']]})
-
+            conn.close()
 
             return {'updated':True, 'reakce':kwargs['reakce']}
         except exc.IntegrityError:
