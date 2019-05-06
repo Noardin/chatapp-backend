@@ -290,6 +290,7 @@ class userSchema(ma.Schema):
 
 
 def createreactionstables(msg_id):
+    msg_id = str(msg_id)
     tablename = '_reactions_for_'+msg_id
     kinds = ['like','angry','XD']
     for kind in kinds:
