@@ -224,18 +224,19 @@ class MessagesData(Base):
                 if query > 0:
                     was = key
             if not kwargs['changed'] == was:
-                engine.execute("delete * from "+mapperforreactions[was]+" where user_id="+str(user_id))
+
                 print(kwargs['changed'])
                 newreactionsclass = mapperforreactions[kwargs['changed']]
                 engine.execute("insert into "+newreactionsclass+" values user_id="+str(user_id))
                 if not was =='':
+                    engine.execute("delete * from " + mapperforreactions[was] + " where user_id=" + str(user_id))
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']:kwargs['reakce'][kwargs['changed']], was: kwargs['reakce'][was]-1})
                     kwargs['reakce'][was] = kwargs['reakce'][was]-1
                 else:
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']: kwargs['reakce'][kwargs['changed']]})
-                    
+
 
             return {'updated':True, 'reakce':kwargs['reakce']}
         except exc.IntegrityError:
