@@ -2,7 +2,7 @@
 from sqlalchemy import create_engine, ForeignKey, DateTime, Boolean
 from sqlalchemy import Column, Date, Integer, String, column, exc, Table, MetaData
 from sqlalchemy.orm import sessionmaker, scoped_session, column_property, mapper
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from appthings.hashes import verify_hash, set_hash
 from flask_marshmallow import Marshmallow
 from marshmallow import fields, Schema
@@ -210,7 +210,13 @@ class MessagesData(Base):
             user_id = session_.query(User.id).filter(User.username == kwargs['current_user'].username).first()
             user_id = userSchema().dump(user_id).data
             was = ''
-            mapperforreactions = getMapperforreactions(msg_id)
+            tablename = '_reactions_for_' + msg_id
+
+            mapperforreactions = {
+                'like': 'like'+tablename,
+                'angry': 'angry' + tablename,
+                'XD': 'Xd'+tablename
+            }
             for key, value in mapperforreactions.items():
                 query = session_.query(value).filter_by(user_id=user_id)
                 if query.count() >0:
@@ -304,6 +310,10 @@ class userSchema(ma.Schema):
 
 
 class ReactionsClass():
+    @declared_attr
+    def __tablename__(cls):
+        return cls.__name__.lower()
+
     def __init__(self, user_id):
         self.user_id = user_id
 
@@ -315,25 +325,11 @@ def createreactionstables(msg_id):
 
     for kind in kinds:
         table = {
-            '__tablename__': kind + tablename,
             'id': Column(Integer, primary_key=True),
             'user_id': Column(Integer, ForeignKey(User.id))
         }
         NewClass = type('Class' + kind + tablename, (Base, ReactionsClass), table)
         NewClass.__table__.create(bind=engine)
 
-def getMapperforreactions(msg_id):
-    msg_id = str(msg_id)
-    mapperclasses ={}
-    tablename = '_reactions_for_' + msg_id
-    kinds = ['like', 'angry', 'XD']
-    for kind in kinds:
-        table = {
-            '__tablename__': kind + tablename,
-            'id': Column(Integer, primary_key=True),
-            'user_id': Column(Integer, ForeignKey(User.id))
-        }
-        NewClass = type('Class' + kind + tablename, (Base, ReactionsClass), table)
-        mapperclasses[kind] = NewClass
-    return mapperclasses
+
 Base.metadata.create_all(engine)
