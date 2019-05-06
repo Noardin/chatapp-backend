@@ -205,7 +205,6 @@ class MessagesData(Base):
         return kwargs
     @classmethod
     def updateReaction(cls, **kwargs):
-        trans = conn.begin()
         try:
 
             msg_id = kwargs['reakce'].get('id')
@@ -230,11 +229,11 @@ class MessagesData(Base):
                 print(kwargs['changed'])
                 newreactionsclass = mapperforreactions[kwargs['changed']]
                 conn.execute("insert into "+newreactionsclass+"(user_id) values(?)", str(user_id))
-                trans.commit()
+
                 if not was =='':
                     conn.execute("delete from " + mapperforreactions[was] + " where user_id=" + str(user_id))
                     print('deleting')
-                    trans.commit()
+                
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']:kwargs['reakce'][kwargs['changed']], was: kwargs['reakce'][was]-1})
                     kwargs['reakce'][was] = kwargs['reakce'][was]-1
