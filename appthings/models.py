@@ -290,7 +290,7 @@ class userSchema(ma.Schema):
     password = fields.String()
 
 
-class ReactionsClass(Base):
+class ReactionsClass():
     def __init__(self, user_id):
         self.user_id = user_id
 
