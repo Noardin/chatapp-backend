@@ -219,14 +219,14 @@ class MessagesData(Base):
             }
             for key, value in mapperforreactions.items():
                 print(value)
-                query = engine.execute("select count user_id from "+value+" where user_id="+user_id)
+                query = engine.execute("select count user_id from "+value+" where user_id="+str(user_id))
                 if query > 0:
                     was = key
             if not kwargs['changed'] == was:
-                engine.execute("delete * from "+mapperforreactions[was]+" where user_id="+user_id)
+                engine.execute("delete * from "+mapperforreactions[was]+" where user_id="+str(user_id))
                 print(kwargs['changed'])
                 newreactionsclass = mapperforreactions[kwargs['changed']]
-                engine.execute("insert into "+newreactionsclass+" values user_id="+user_id)
+                engine.execute("insert into "+newreactionsclass+" values user_id="+str(user_id))
                 session_.query(MessagesData).filter_by(id=msg_id).update({kwargs['changed']:kwargs['reakce'][kwargs['changed']], was: kwargs['reakce'][was]-1})
                 kwargs['reakce'][was] = kwargs['reakce'][was]-1
 
