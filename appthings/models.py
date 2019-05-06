@@ -232,7 +232,7 @@ class MessagesData(Base):
                 conn.execute("insert into "+newreactionsclass+"(user_id) values(?)", str(user_id))
                 trans.commit()
                 if not was =='':
-                    conn.execute("delete * from " + mapperforreactions[was] + " where user_id=" + str(user_id))
+                    conn.execute("delete from " + mapperforreactions[was] + " where user_id=" + str(user_id))
                     print('deleting')
                     trans.commit()
                     session_.query(MessagesData).filter_by(id=msg_id).update(
