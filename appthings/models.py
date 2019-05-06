@@ -210,7 +210,7 @@ class MessagesData(Base):
             user_id = session_.query(User.id).filter(User.username == kwargs['current_user'].username).first()
             user_id = userSchema().dump(user_id).data
             was = ''
-            tablename = '_reactions_for_' + msg_id
+            tablename = '_reactions_for_' + str(msg_id)
 
             mapperforreactions = {
                 'like': 'like'+tablename,
@@ -218,17 +218,15 @@ class MessagesData(Base):
                 'XD': 'Xd'+tablename
             }
             for key, value in mapperforreactions.items():
-                query = session_.query(value).filter_by(user_id=user_id)
-                if query.count() >0:
+                query = engine.execute("select count user_id from "+value+" where user_id="+user_id)
+                if query >0:
                     was = key
             if not kwargs['changed'] == was:
-                query = session_.query(mapperforreactions[was]).filter_by(user_id=user_id).first()
-                session_.delete(query)
+                engine.execute("delete * from "+mapperforreactions[was]+" where user_id="+user_id)
                 newreactionsclass = mapperforreactions[kwargs['changed']]
-                session_.add(newreactionsclass(user_id=user_id))
+                engine.execute("insert into "+newreactionsclass+" values user_id="+user_id)
                 session_.query(MessagesData).filter_by(id=msg_id).update({kwargs['changed']:kwargs['reakce'][kwargs['changed']], was: kwargs['reakce'][was]-1})
                 kwargs['reakce'][was] = kwargs['reakce'][was]-1
-            session_.commit()
 
             return {'updated':True, 'reakce':kwargs['reakce']}
         except exc.IntegrityError:
