@@ -310,9 +310,6 @@ class userSchema(ma.Schema):
 
 
 class ReactionsClass():
-    @declared_attr
-    def __tablename__(cls):
-        return cls.__name__.lower()
 
     def __init__(self, user_id):
         self.user_id = user_id
@@ -325,6 +322,7 @@ def createreactionstables(msg_id):
 
     for kind in kinds:
         table = {
+            '__tablename__':kind+tablename,
             'id': Column(Integer, primary_key=True),
             'user_id': Column(Integer, ForeignKey(User.id))
         }
