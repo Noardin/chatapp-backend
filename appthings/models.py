@@ -238,12 +238,13 @@ class MessagesData(Base):
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']:kwargs['reakce'][kwargs['changed']], was: kwargs['reakce'][was]-1})
                     kwargs['reakce'][was] = kwargs['reakce'][was]-1
+                    
                     print('after session')
                 else:
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']: kwargs['reakce'][kwargs['changed']]})
                 print('done')
-
+                session_.commit()
             return {'updated':True, 'reakce':kwargs['reakce']}
         except exc.IntegrityError:
             print(exc.IntegrityError)
