@@ -228,8 +228,10 @@ class MessagesData(Base):
                 print(kwargs['changed'])
                 newreactionsclass = mapperforreactions[kwargs['changed']]
                 engine.execute("insert into "+newreactionsclass+"(user_id) values(?)", str(user_id))
+                engine.commit()
                 if not was =='':
                     engine.execute("delete * from " + mapperforreactions[was] + " where user_id=" + str(user_id))
+                    engine.commit()
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']:kwargs['reakce'][kwargs['changed']], was: kwargs['reakce'][was]-1})
                     kwargs['reakce'][was] = kwargs['reakce'][was]-1
