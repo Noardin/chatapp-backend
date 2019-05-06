@@ -211,7 +211,8 @@ class MessagesData(Base):
             user_id = userSchema().dump(user_id).data['id']
             was = ''
             tablename = '_reactions_for_' + str(msg_id)
-            trans = engine.begin()
+            conn = engine.connect()
+            trans = conn.begin()
             mapperforreactions = {
                 'like': 'like'+tablename,
                 'angry': 'angry' + tablename,
@@ -219,7 +220,7 @@ class MessagesData(Base):
             }
             for key, value in mapperforreactions.items():
                 print(value)
-                query = engine.execute("select count(user_id) from "+value+" where user_id="+str(user_id)).scalar()
+                query = conn.execute("select count(user_id) from "+value+" where user_id="+str(user_id)).scalar()
                 print(query)
                 if query > 0:
                     was = key
@@ -227,10 +228,10 @@ class MessagesData(Base):
 
                 print(kwargs['changed'])
                 newreactionsclass = mapperforreactions[kwargs['changed']]
-                engine.execute("insert into "+newreactionsclass+"(user_id) values(?)", str(user_id))
+                conn.execute("insert into "+newreactionsclass+"(user_id) values(?)", str(user_id))
                 trans.commit()
                 if not was =='':
-                    engine.execute("delete * from " + mapperforreactions[was] + " where user_id=" + str(user_id))
+                    conn.execute("delete * from " + mapperforreactions[was] + " where user_id=" + str(user_id))
                     trans.commit()
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']:kwargs['reakce'][kwargs['changed']], was: kwargs['reakce'][was]-1})
