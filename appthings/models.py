@@ -233,14 +233,14 @@ class MessagesData(Base):
                 if not was =='':
                     conn.execute("delete from " + mapperforreactions[was] + " where user_id=" + str(user_id))
                     print('deleting')
-                    conn.execute("update messages_data set messages_data."
-                                 +kwargs["changed"]+"+= 1, messages_data."+was+"-= 1 where messages_data.id ="+str(user_id))
+                    conn.execute("update messages_data set "
+                                 +kwargs["changed"]+"+= 1, "+was+"-= 1 where id ="+str(user_id))
 
                     print('after session')
                 else:
                     print('updating without was')
-                    conn.execute("update messages_data set messages_data."
-                                 + kwargs["changed"]+"+= 1 where messages_data.id ="+str(user_id))
+                    conn.execute("update messages_data set "
+                                 + kwargs["changed"]+"+= 1 where id ="+str(user_id))
 
                 print('done')
                 session_.commit()
