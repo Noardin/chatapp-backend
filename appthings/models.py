@@ -233,7 +233,7 @@ class MessagesData(Base):
                 if not was =='':
                     conn.execute("delete from " + mapperforreactions[was] + " where user_id=" + str(user_id))
                     print('deleting')
-                
+
                     session_.query(MessagesData).filter_by(id=msg_id).update(
                         {kwargs['changed']:kwargs['reakce'][kwargs['changed']], was: kwargs['reakce'][was]-1})
                     kwargs['reakce'][was] = kwargs['reakce'][was]-1
@@ -244,7 +244,10 @@ class MessagesData(Base):
                         {kwargs['changed']: kwargs['reakce'][kwargs['changed']]})
                 print('done')
                 session_.commit()
-            return {'updated':True, 'reakce':kwargs['reakce']}
+            reakce = session_.query(MessagesData.like, MessagesData.XD, MessagesData.angry)\
+                .filter_by(id=msg_id).first()
+            reakce = MessagesSchema().dump(reakce).data
+            return {'updated':True, 'reakce':reakce}
         except exc.IntegrityError:
             print(exc.IntegrityError)
             return {'updated':False}
