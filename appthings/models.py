@@ -235,13 +235,13 @@ class MessagesData(Base):
                     print('deleting')
 
                     session_.query(MessagesData).filter_by(id=msg_id).update(
-                        {kwargs['changed']:str("messages_data."+kwargs['changed']+1), was: str("messages_data."+was+" -1")})
+                        {kwargs['changed']:str("messages_data."+kwargs['changed']+" +1"), was: str("messages_data."+was+" -1")})
 
                     print('after session')
                 else:
                     print('updating without was')
                     session_.query(MessagesData).filter_by(id=msg_id).update(
-                        {kwargs['changed']: str("messages_data."+kwargs['changed']+1)})
+                        {kwargs['changed']: str("messages_data."+kwargs['changed']+" +1")})
                 print('done')
                 session_.commit()
             reakce = session_.query(MessagesData.like, MessagesData.XD, MessagesData.angry)\
