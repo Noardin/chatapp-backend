@@ -1,7 +1,7 @@
 
 from sqlalchemy import create_engine, ForeignKey, DateTime, Boolean
 from sqlalchemy import Column, Date, Integer, String, column, exc, Table, MetaData
-from sqlalchemy.orm import sessionmaker, scoped_session, column_property, mapper
+from sqlalchemy.orm import sessionmaker, scoped_session, column_property, mapper, aliased
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from appthings.hashes import verify_hash, set_hash
 from flask_marshmallow import Marshmallow
@@ -233,15 +233,15 @@ class MessagesData(Base):
                 if not was =='':
                     conn.execute("delete from " + mapperforreactions[was] + " where user_id=" + str(user_id))
                     print('deleting')
-
-                    session_.query(MessagesData).filter_by(id=msg_id).update(
-                        {kwargs['changed']:str("messages_data."+kwargs['changed']+" +1"), was: str("messages_data."+was+" -1")})
+                    conn.execute("update messages_data set messages_data."
+                                 +kwargs["changed"]+"+= 1, messages_data."+was+"-= 1 where messages_data.id ="+str(user_id))
 
                     print('after session')
                 else:
                     print('updating without was')
-                    session_.query(MessagesData).filter_by(id=msg_id).update(
-                        {kwargs['changed']: str("messages_data."+kwargs['changed']+" +1")})
+                    conn.execute("update messages_data set messages_data."
+                                 + kwargs["changed"]+"+= 1 where messages_data.id ="+str(user_id))
+
                 print('done')
                 session_.commit()
             reakce = session_.query(MessagesData.like, MessagesData.XD, MessagesData.angry)\
