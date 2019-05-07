@@ -234,13 +234,13 @@ class MessagesData(Base):
                     conn.execute("delete from " + mapperforreactions[was] + " where user_id=" + str(user_id))
                     print('deleting')
                     conn.execute("update messages_data set "
-                                 +kwargs["changed"]+"+= 1, "+was+"-= 1 where id ="+str(user_id))
+                                 +kwargs["changed"]+" ="+kwargs['changed']+" +1, "+was+"-= 1 where id ="+str(user_id))
 
                     print('after session')
                 else:
                     print('updating without was')
                     conn.execute("update messages_data set "
-                                 + kwargs["changed"]+"+= 1 where id ="+str(user_id))
+                                 + kwargs["changed"]+ "="+kwargs['changed']+" +1 where id ="+str(user_id))
 
                 print('done')
                 session_.commit()
