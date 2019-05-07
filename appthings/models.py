@@ -234,7 +234,7 @@ class MessagesData(Base):
                     conn.execute("delete from " + mapperforreactions[was] + " where user_id=" + str(user_id))
                     print('deleting')
                     conn.execute("update messages_data set "
-                                 +kwargs["changed"]+" ="+kwargs['changed']+" +1, "+was+"-= 1 where id ="+str(user_id))
+                                 +kwargs["changed"]+" ="+kwargs['changed']+" +1, "+was+" = "+was+"-1 where id ="+str(user_id))
 
                     print('after session')
                 else:
@@ -247,6 +247,8 @@ class MessagesData(Base):
             reakce = session_.query(MessagesData.like, MessagesData.XD, MessagesData.angry)\
                 .filter_by(id=msg_id).first()
             reakce = MessagesSchema().dump(reakce).data
+            reakce['date'] = kwargs['reakce']['date']
+            reakce['id'] = msg_id
             return {'updated':True, 'reakce':reakce}
         except exc.IntegrityError:
             print(exc.IntegrityError)
