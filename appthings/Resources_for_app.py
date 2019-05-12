@@ -93,6 +93,10 @@ class Login(Resource):
 
 class Messages(Resource):
     method_decorators = [token_required]
+    def delete(self, current_user):
+        data = request.get_json()
+        deleted = MessagesData.deletemsg(**data)
+        return jsonify(deleted)
 
     def get(self, current_user):
         return jsonify(MessagesData.getALL(current_user))

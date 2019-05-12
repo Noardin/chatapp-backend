@@ -119,7 +119,6 @@ class User(Base):
                 return render_template('activate_template.html', msg=msg)
 
 
-
 class MessagesData(Base):
     __tablename__ = "messages_data"
 
@@ -131,10 +130,11 @@ class MessagesData(Base):
     like = Column(Integer)
     XD = Column(Integer)
     angry = Column(Integer)
+    deleted = Column(Boolean, default=False)
     settings_id = Column(Integer, ForeignKey('settings.id'))
     settings = relationship('Settings')
 
-    def __init__(self, username, message, audio, settings_id, angry, XD, like):
+    def __init__(self, username, message, audio, settings_id, angry, XD, like, deleted):
         self.audio = audio
         self.username = username
         self.message = message
@@ -143,9 +143,10 @@ class MessagesData(Base):
         self.angry = angry
         self.XD = XD
         self.like = like
+        self.deleted = deleted
 
     @classmethod
-    def getALL(cls,user):
+    def getALL(cls, user):
         dates = session_.query(MessagesData.date.distinct().label('date'))
         dates = [str(row.date) for row in dates.all()]
         print(dates)
@@ -187,7 +188,7 @@ class MessagesData(Base):
         audio = kwargs.get('audio')
         settings_id = session_.query(User.id).filter_by(username=username).first()
         message = MessagesData(message=str(msg), username=str(username),
-                               audio=bool(audio), settings_id=int(settings_id.id), like=0, XD=0, angry=0)
+                               audio=bool(audio), settings_id=int(settings_id.id), like=0, XD=0, angry=0, deleted=Column.default)
         session_.add(message)
         session_.flush()
         message_id = message.id
@@ -253,7 +254,19 @@ class MessagesData(Base):
         except exc.IntegrityError:
             print(exc.IntegrityError)
             return {'updated':False}
-
+    @classmethod
+    def deletemsg(cls, **kwargs):
+        msg_id = kwargs.get('id')
+        try:
+            msg = session_.query(cls).filter_by(id=msg_id)
+            msg_data = MessagesSchema().dump(msg.first())
+            msg.update({
+                'deleted':True
+            })
+            return {'deleted':True, 'data':msg_data}
+        except exc.IntegrityError:
+            session_.rollback()
+            return {'deleted':False}
 
 
 class Settings(Base):
@@ -301,6 +314,7 @@ class Settings(Base):
                 print(userdata)
                 return {'changed': True}
             except exc.IntegrityError:
+                session_.rollback()
                 return {'changed': False}
 
 
@@ -316,6 +330,7 @@ class MessagesSchema(ma.Schema):
     like = fields.Integer()
     XD = fields.Integer()
     angry = fields.Integer()
+    deleted = fields.Boolean()
 
 
 class userSchema(ma.Schema):
