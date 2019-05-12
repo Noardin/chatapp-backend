@@ -157,7 +157,8 @@ class MessagesData(Base):
         messages = session_.query(MessagesData, Settings.profile_img, Settings.nickname, MessagesData.message,
                                   MessagesData.username,
                                   MessagesData.id, MessagesData.date,
-                                  MessagesData.audio, MessagesData.like, MessagesData.XD, MessagesData.angry
+                                  MessagesData.audio, MessagesData.like, MessagesData.XD, MessagesData.angry,
+                                  MessagesData.deleted
                                   ).join(Settings).order_by(cls.date).all()
 
         messages = MessagesSchema(many=True).dump(messages).data
