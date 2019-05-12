@@ -91,12 +91,18 @@ class Login(Resource):
                 return jsonify({'msg': 'spatne heslo', 'authenticated': False, 'alert': alert})
 
 
-class Messages(Resource):
+class DeleteMessage(Resource):
     method_decorators = [token_required]
-    def delete(self, current_user):
+
+    def post(self, current_user):
         data = request.get_json()
         deleted = MessagesData.deletemsg(**data)
         return jsonify(deleted)
+
+
+class Messages(Resource):
+    method_decorators = [token_required]
+
 
     def get(self, current_user):
         return jsonify(MessagesData.getALL(current_user))

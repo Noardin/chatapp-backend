@@ -2,7 +2,7 @@ from flask import Blueprint, send_from_directory
 from flask_cors import cross_origin
 from flask_restful import Api
 from appthings.Resources_for_app import Messages, update_userData, Register,\
-    ChangePassword, UpdateSettings, RequestPasswordChange, Login, UpdateReactions
+    ChangePassword, UpdateSettings, RequestPasswordChange, Login, UpdateReactions, DeleteMessage
 from appthings.models import *
 from flask_socketio import join_room, send
 api = Blueprint('api',__name__)
@@ -27,6 +27,7 @@ apps.add_resource(Register, '/registrate')
 apps.add_resource(UpdateSettings, '/update_settings')
 apps.add_resource(RequestPasswordChange, '/request_password_change')
 apps.add_resource(UpdateReactions, '/update_reactions')
+apps.add_resource(DeleteMessage, '/delete_message')
 
 
 @api.route('/confirm/<token>')
