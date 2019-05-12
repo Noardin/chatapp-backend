@@ -254,6 +254,7 @@ class MessagesData(Base):
             return {'updated':True, 'reakce':reakce}
         except exc.IntegrityError:
             print(exc.IntegrityError)
+            session_.rollback()
             return {'updated':False}
     @classmethod
     def deletemsg(cls, **kwargs):
