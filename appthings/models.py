@@ -251,6 +251,7 @@ class MessagesData(Base):
             reakce = MessagesSchema().dump(reakce).data
             reakce['date'] = kwargs['reakce']['date']
             reakce['id'] = msg_id
+
             return {'updated':True, 'reakce':reakce}
         except exc.IntegrityError:
             print(exc.IntegrityError)
@@ -265,6 +266,7 @@ class MessagesData(Base):
             msg.update({
                 'deleted':True
             })
+            session_.commit()
             return {'deleted':True, 'data':msg_data}
         except exc.IntegrityError:
             session_.rollback()
