@@ -322,7 +322,7 @@ class Settings(Base):
 
 
 class MessagesSchema(ma.Schema):
-    id = fields.String()
+    id = fields.Integer()
     username = fields.String()
     message = fields.String()
     date = fields.Date()
