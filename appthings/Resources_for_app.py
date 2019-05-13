@@ -104,7 +104,8 @@ class UpdateMessage(Resource):
 
     def post(self, current_user):
         data = request.get_json()
-
+        updated = MessagesData.updatemsg(**data)
+        inicializApp.socketio.emit('updatemsg', updated, room='chatroom', broadcast=True)
 
 class Messages(Resource):
     method_decorators = [token_required]
