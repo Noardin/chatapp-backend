@@ -271,7 +271,22 @@ class MessagesData(Base):
         except exc.IntegrityError:
             session_.rollback()
             return {'deleted':False}
+    @classmethod
+    def updatemsg(cls,**kwargs):
+        msg_id = kwargs.get('id')
+        newmsg = kwargs.get('message')
 
+        try:
+            msg = session_.query(cls).filter_by(id=msg_id)
+            msg_data= MessagesSchema().dump(msg.first())
+            msg.update({
+                'message':newmsg
+            })
+            session_.commit()
+            return {'updated':True, 'data':msg_data}
+        except exc.IntegrityError:
+            session_.rollback()
+            return {'updated':False}
 
 class Settings(Base):
     __tablename__ = "settings"

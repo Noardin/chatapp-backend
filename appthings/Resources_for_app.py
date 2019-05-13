@@ -97,7 +97,13 @@ class DeleteMessage(Resource):
     def post(self, current_user):
         data = request.get_json()
         deleted = MessagesData.deletemsg(**data)
-        return jsonify(deleted)
+        inicializApp.socketio.emit('deletemsg', deleted, room='chatroom', broadcast=True)
+
+class UpdateMessage(Resource):
+    method_decorators = [token_required]
+
+    def post(self, current_user):
+        data = request.get_json()
 
 
 class Messages(Resource):
