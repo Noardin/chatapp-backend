@@ -278,10 +278,11 @@ class MessagesData(Base):
 
         try:
             msg = session_.query(cls).filter_by(id=msg_id)
-            msg_data= MessagesSchema().dump(msg.first())
+
             msg.update({
                 'message':newmsg
             })
+            msg_data = MessagesSchema().dump(msg.first())
             session_.commit()
             return {'updated':True, 'data':msg_data}
         except exc.IntegrityError:
