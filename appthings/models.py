@@ -97,7 +97,6 @@ class User(Base):
             session_.rollback()
             return {'registrated': False}
 
-
     @classmethod
     def confirm(cls, token):
         email = confirm_token(token)
@@ -135,7 +134,6 @@ class MessagesData(Base):
     settings = relationship('Settings')
     user = relationship('User')
     user_id = Column(Integer, ForeignKey(User.id))
-    reaction = relationship('Reaction', uselist=False)
 
     def __init__(self, username, message, audio, settings_id, deleted, user_id):
         self.audio = audio
@@ -159,17 +157,17 @@ class MessagesData(Base):
                                   MessagesData.username,
                                   MessagesData.id, MessagesData.date,
                                   MessagesData.audio,
-                                  MessagesData.deleted, Reactions.reakce
-                                  ).join(Settings).join(Reactions).order_by(cls.date).all()
+                                  MessagesData.deleted
+                                  ).join(Settings).order_by(cls.date).all()
 
         messages = MessagesSchema(many=True).dump(messages).data
         print(messages)
+        druhyreakce = ['like','XD', 'angry']
         for message in messages:
-            message['reakce'] = {
-                'like':message['reakce'].count('like'),
-                'XD':message['reakce'].count('XD'),
-                'angry':message['reakce'].count('angry')
-            }
+            datareakce = session_.query(Reactions.reakce).filter(Reactions.msg_id == message['id'])
+            message['reakce'] = {}
+            for reakce in druhyreakce:
+                message['reakce'][reakce] = datareakce.filter(Reactions.reakce == str(reakce)).count()
             if message['username'] == user.username:
                 message['you'] = True
             else:
@@ -190,6 +188,7 @@ class MessagesData(Base):
         message = MessagesData(message=str(msg), username=str(username),
                                audio=bool(audio), settings_id=int(settings_id.id),
                                deleted=Column.default, user_id=user_id)
+        print(message)
         session_.add(message)
         session_.flush()
         message_id = message.id
@@ -247,7 +246,7 @@ class Reactions(Base):
     user_id = Column(Integer, ForeignKey(User.id))
     user = relationship(User)
     msg_id = Column(Integer, ForeignKey(MessagesData.id))
-    msg = relationship(MessagesData)
+    msg = relationship(MessagesData, backref=backref('reakce', uselist=True))
     reakce = Column(String)
 
     def __init__(self, user_id, msg_id, reakce):
@@ -274,14 +273,14 @@ class Reactions(Base):
                 session_.add(newreakce)
 
             session_.commit()
+
             reakceData = session_.query(cls).filter(cls.msg_id == msg_id)
-            msg = session_.query(MessagesData).filter(MessagesData.id == msg_id).first()
-            msg = MessagesSchema().dump(msg).data
             reakce = {}
             druhyreakce = ['like', 'XD', 'angry']
             for druh in druhyreakce:
                 reakce[druh] = reakceData.filter(cls.reakce == str(druh)).count()
-            reakce['date'] = msg['date']
+            reakce['date'] = kwargs['reakce'].get('date')
+            reakce['id'] = msg_id
             return {'updated': True, 'reakce': reakce}
         except exc.IntegrityError:
             print(exc.IntegrityError)
@@ -357,9 +356,8 @@ class MessagesSchema(ma.Schema):
     audio = fields.Boolean()
     profile_img = fields.String()
     nickname = fields.String()
-    reakce = fields.List(fields.String())
     deleted = fields.Boolean()
-
+    reakce = fields.List(fields.String())
 
 class userSchema(ma.Schema):
     id = fields.Integer()

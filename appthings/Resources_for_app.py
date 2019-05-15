@@ -164,6 +164,7 @@ class UpdateReactions(Resource):
 class Register(Resource):
     def options(self):
         return{}
+
     def post(self):
         data = request.get_json()
         data = data['UserData']
