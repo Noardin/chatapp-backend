@@ -357,7 +357,7 @@ class MessagesSchema(ma.Schema):
     audio = fields.Boolean()
     profile_img = fields.String()
     nickname = fields.String()
-    reakce = fields.List(fields.Nested(ReactionSchema))
+    reakce = fields.List(fields.String())
     deleted = fields.Boolean()
 
 
