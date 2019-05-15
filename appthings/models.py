@@ -119,6 +119,9 @@ class User(Base):
                 return render_template('activate_template.html', msg=msg)
 
 
+# ///////////////////////////////////////////////////////
+
+
 class MessagesData(Base):
     __tablename__ = "messages_data"
 
@@ -127,23 +130,21 @@ class MessagesData(Base):
     message = Column(String)
     date = Column(Date, nullable=False)
     audio = Column(Boolean)
-    like = Column(Integer)
-    XD = Column(Integer)
-    angry = Column(Integer)
     deleted = Column(Boolean, default=False)
     settings_id = Column(Integer, ForeignKey('settings.id'))
     settings = relationship('Settings')
+    user = relationship('User')
+    user_id = Column(Integer, ForeignKey(User.id))
+    reaction = relationship('Reaction', uselist=False)
 
-    def __init__(self, username, message, audio, settings_id, angry, XD, like, deleted):
+    def __init__(self, username, message, audio, settings_id, deleted, user_id):
         self.audio = audio
         self.username = username
         self.message = message
         self.date = datetime.date.today()
         self.settings_id = settings_id
-        self.angry = angry
-        self.XD = XD
-        self.like = like
         self.deleted = deleted
+        self.user_id = user_id
 
     @classmethod
     def getALL(cls, user):
@@ -157,21 +158,18 @@ class MessagesData(Base):
         messages = session_.query(MessagesData, Settings.profile_img, Settings.nickname, MessagesData.message,
                                   MessagesData.username,
                                   MessagesData.id, MessagesData.date,
-                                  MessagesData.audio, MessagesData.like, MessagesData.XD, MessagesData.angry,
-                                  MessagesData.deleted
-                                  ).join(Settings).order_by(cls.date).all()
+                                  MessagesData.audio,
+                                  MessagesData.deleted, Reactions.reakce
+                                  ).join(Settings).join(Reactions).order_by(cls.date).all()
 
         messages = MessagesSchema(many=True).dump(messages).data
         print(messages)
         for message in messages:
             message['reakce'] = {
-                'like':message['like'],
-                'XD':message['XD'],
-                'angry':message['angry']
+                'like':message['reakce'].count('like'),
+                'XD':message['reakce'].count('XD'),
+                'angry':message['reakce'].count('angry')
             }
-            message.pop('like')
-            message.pop('XD')
-            message.pop('angry')
             if message['username'] == user.username:
                 message['you'] = True
             else:
@@ -179,22 +177,23 @@ class MessagesData(Base):
 
         message_data = [{'date':datum, 'messages':[message for message in messages if message['date'] == datum]} for datum in dates]
         print(message_data)
-        # messages.append(userdata)
         return message_data
 
     @classmethod
     def insertMSG(cls, **kwargs):
         msg = kwargs.get('message')
         username = kwargs.get('username')
+        user_id = session_.query(User.id).filter(User.username == username).first()
+        user_id = userSchema().dump(user_id).data.get('id')
         audio = kwargs.get('audio')
         settings_id = session_.query(User.id).filter_by(username=username).first()
         message = MessagesData(message=str(msg), username=str(username),
-                               audio=bool(audio), settings_id=int(settings_id.id), like=0, XD=0, angry=0, deleted=Column.default)
+                               audio=bool(audio), settings_id=int(settings_id.id),
+                               deleted=Column.default, user_id=user_id)
         session_.add(message)
         session_.flush()
         message_id = message.id
         session_.commit()
-        createreactionstables(message_id)
         userdata = User.getUserData(username)
         kwargs['msg_id'] = message_id
         kwargs['date'] = str(datetime.date.today())
@@ -205,58 +204,7 @@ class MessagesData(Base):
                             'XD': 0,
                             'angry': 0}
         return kwargs
-    @classmethod
-    def updateReaction(cls, **kwargs):
-        try:
 
-            msg_id = kwargs['reakce'].get('id')
-            user_id = session_.query(User.id).filter(User.username == kwargs['current_user'].username).first()
-            user_id = userSchema().dump(user_id).data['id']
-            was = ''
-            tablename = '_reactions_for_' + str(msg_id)
-
-            mapperforreactions = {
-                'like': 'like'+tablename,
-                'angry': 'angry' + tablename,
-                'XD': 'Xd'+tablename
-            }
-            for key, value in mapperforreactions.items():
-                print(value)
-                query = conn.execute("select count(user_id) from "+value+" where user_id="+str(user_id)).scalar()
-                print(query)
-                if query > 0:
-                    was = key
-            if not kwargs['changed'] == was:
-
-                print(kwargs['changed'])
-                newreactionsclass = mapperforreactions[kwargs['changed']]
-                conn.execute("insert into "+newreactionsclass+"(user_id) values(?)", str(user_id))
-
-                if not was =='':
-                    conn.execute("delete from " + mapperforreactions[was] + " where user_id=" + str(user_id))
-                    print('deleting')
-                    conn.execute("update messages_data set "
-                                 +kwargs["changed"]+" ="+kwargs['changed']+" +1, "+was+" = "+was+"-1 where id ="+str(msg_id))
-
-                    print('after session')
-                else:
-                    print('updating without was')
-                    conn.execute("update messages_data set "
-                                 + kwargs["changed"]+ "="+kwargs['changed']+" +1 where id ="+str(msg_id))
-
-                print('done')
-                session_.commit()
-            reakce = session_.query(MessagesData.like, MessagesData.XD, MessagesData.angry)\
-                .filter_by(id=msg_id).first()
-            reakce = MessagesSchema().dump(reakce).data
-            reakce['date'] = kwargs['reakce']['date']
-            reakce['id'] = msg_id
-
-            return {'updated':True, 'reakce':reakce}
-        except exc.IntegrityError:
-            print(exc.IntegrityError)
-            session_.rollback()
-            return {'updated':False}
     @classmethod
     def deletemsg(cls, **kwargs):
         msg_id = kwargs.get('id')
@@ -289,6 +237,61 @@ class MessagesData(Base):
             session_.rollback()
             return {'updated':False}
 
+
+# /////////////////////////////////////////////
+
+
+class Reactions(Base):
+    __tablename__="reakce"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey(User.id))
+    user = relationship(User)
+    msg_id = Column(Integer, ForeignKey(MessagesData.id))
+    msg = relationship(MessagesData)
+    reakce = Column(String)
+
+    def __init__(self, user_id, msg_id, reakce):
+        self.user_id = user_id
+        self.msg_id = msg_id
+        self.reakce = reakce
+
+    @classmethod
+    def updateReaction(cls, **kwargs):
+        try:
+
+            msg_id = kwargs['reakce'].get('id')
+            user_id = session_.query(User.id).filter(User.username == kwargs['current_user'].username).first()
+            user_id = userSchema().dump(user_id).data['id']
+
+            myReaction = session_.query(cls).filter(cls.msg_id == msg_id, cls.user_id == user_id)
+            if myReaction.count() > 0:
+                myReaction.update({
+                    'reakce': kwargs['changed']
+                })
+
+            else:
+                newreakce = cls(user_id=user_id,msg_id=msg_id, reakce = kwargs['changed'])
+                session_.add(newreakce)
+
+            session_.commit()
+            reakceData = session_.query(cls).filter(cls.msg_id == msg_id)
+            msg = session_.query(MessagesData).filter(MessagesData.id == msg_id).first()
+            msg = MessagesSchema().dump(msg).data
+            reakce = {}
+            druhyreakce = ['like', 'XD', 'angry']
+            for druh in druhyreakce:
+                reakce[druh] = reakceData.filter(cls.reakce == str(druh)).count()
+            reakce['date'] = msg['date']
+            return {'updated': True, 'reakce': reakce}
+        except exc.IntegrityError:
+            print(exc.IntegrityError)
+            session_.rollback()
+            return {'updated': False}
+
+
+# ///////////////////////////////////////////////////////
+
+
 class Settings(Base):
     __tablename__ = "settings"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -303,6 +306,7 @@ class Settings(Base):
         self.profile_img = profile_img
         self.nickname = nickname
         self.user_id = user_id
+
     @classmethod
     def UpdateSettings(cls,**kwargs):
         username = kwargs.get('username')
@@ -338,6 +342,12 @@ class Settings(Base):
                 return {'changed': False}
 
 
+class ReactionSchema(ma.Schema):
+    id = fields.Integer()
+    msg_id = fields.Integer()
+    user_id = fields.Integer()
+    reakce = fields.String()
+
 
 class MessagesSchema(ma.Schema):
     id = fields.Integer()
@@ -347,9 +357,7 @@ class MessagesSchema(ma.Schema):
     audio = fields.Boolean()
     profile_img = fields.String()
     nickname = fields.String()
-    like = fields.Integer()
-    XD = fields.Integer()
-    angry = fields.Integer()
+    reakce = fields.List(fields.Nested(ReactionSchema))
     deleted = fields.Boolean()
 
 
@@ -361,27 +369,6 @@ class userSchema(ma.Schema):
     profile_img = fields.String()
     confirmed = fields.Boolean()
     password = fields.String()
-
-
-class ReactionsClass():
-
-    def __init__(self, user_id):
-        self.user_id = user_id
-
-
-def createreactionstables(msg_id):
-    msg_id = str(msg_id)
-    tablename = '_reactions_for_'+msg_id
-    kinds = ['like','angry','XD']
-
-    for kind in kinds:
-        table = {
-            '__tablename__':kind+tablename,
-            'id': Column(Integer, primary_key=True),
-            'user_id': Column(Integer, ForeignKey(User.id))
-        }
-        NewClass = type('Class' + kind + tablename, (Base, ReactionsClass), table)
-        NewClass.__table__.create(bind=engine)
 
 
 Base.metadata.create_all(engine)

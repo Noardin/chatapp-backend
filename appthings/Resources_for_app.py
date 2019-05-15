@@ -99,6 +99,7 @@ class DeleteMessage(Resource):
         deleted = MessagesData.deletemsg(**data)
         inicializApp.socketio.emit('deletemsg', deleted, room='chatroom', broadcast=True)
 
+
 class UpdateMessage(Resource):
     method_decorators = [token_required]
 
@@ -107,9 +108,9 @@ class UpdateMessage(Resource):
         updated = MessagesData.updatemsg(**data)
         inicializApp.socketio.emit('updatemsg', updated, room='chatroom', broadcast=True)
 
+
 class Messages(Resource):
     method_decorators = [token_required]
-
 
     def get(self, current_user):
         return jsonify(MessagesData.getALL(current_user))
@@ -152,12 +153,13 @@ class UpdateReactions(Resource):
     def post(self, current_user):
         data = request.get_json()
         data['current_user'] = current_user
-        update = MessagesData.updateReaction(**data)
+        update = Reactions.updateReaction(**data)
         if update['updated']:
             inicializApp.socketio.emit('updatereactions', update['reakce'], room='chatroom', broadcast=True)
             return 'updated'
         else:
             return 'failed'
+
 
 class Register(Resource):
     def options(self):
