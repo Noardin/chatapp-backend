@@ -16,6 +16,60 @@ alert = {
         'text': ''
     }
 
+
+def decodebase64andsaveasfile(data, druh, current_user):
+    if druh == 'image':
+        N_data = re.sub('^data:image/.+;base64,', '', data)
+        decodedData = base64.b64decode(N_data)
+        # rename file and save
+
+        oldfilename = User.getUserData(current_user.username)
+        print('oldfilename', str(oldfilename['profile_img']))
+        oldpath = os.path.join(current_app.config['UPLOAD_FOLDER'], str(oldfilename['profile_img'] + '.jpg'))
+        filename = ''.join([random.choice(string.ascii_letters + string.digits)
+                            for n in range(5)]) + '_' + str(current_user.username) + '_profile_img'
+        newpath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename + '.jpg')
+        print(newpath)
+        if not oldfilename['profile_img'] == 'icons8-person-90':
+            os.renames(oldpath, newpath)
+        with open(newpath, 'wb') as f:
+            f.write(decodedData)
+            f.close()
+        kwargs = {
+            'username': current_user.username,
+            'profile_img': filename
+        }
+        update = Settings.UpdateSettings(**kwargs)
+        update['filename'] = filename
+        return update
+
+    else:
+        N_data = re.sub('^data:audio/.+;base64,', '', data)
+        decodedData = base64.b64decode(N_data)
+        return_data = {}
+        # rename file and save
+        filename = ''.join([random.choice(string.ascii_letters + string.digits)
+                            for n in range(30)]) + '_' + str(current_user.username) + '_audioMessage'
+
+        newpath = os.path.join(current_app.config['UPLOAD_FOLDER_AUDIO'], filename + '.wav')
+        unique = os.path.isfile(newpath)
+        while unique:
+            print(unique)
+            filename = ''.join([random.choice(string.ascii_letters + string.digits)
+                                for n in range(30)]) + '_' + str(current_user.username) + '_audioMessage'
+
+            newpath = os.path.join(current_app.config['UPLOAD_FOLDER_AUDIO'], filename + '.wav')
+            unique = os.path.isfile(newpath)
+
+        with open(newpath, 'wb') as f:
+            print('writing')
+            f.write(decodedData)
+            print('after')
+            f.close()
+            return_data['message'] = filename
+        return return_data
+
+
 def token_required(f):
     @wraps(f)
     def _verify(*args, **kwargs):
@@ -117,31 +171,14 @@ class Messages(Resource):
 
     def post(self, current_user):
         data = request.get_json()
-        data['username'] = current_user.username
+
         if data['audio']:
             audio = data['message']
             print(audio)
-            filename = ''.join([random.choice(string.ascii_letters + string.digits)
-                                for n in range(30)]) + '_' + str(current_user.username) + '_audioMessage'
+            return_data = decodebase64andsaveasfile(audio, 'audio', current_user)
+            data['message'] = return_data['message']
 
-            newpath = os.path.join(current_app.config['UPLOAD_FOLDER_AUDIO'], filename + '.wav')
-            unique = os.path.isfile(newpath)
-            while unique:
-                print(unique)
-                filename = ''.join([random.choice(string.ascii_letters + string.digits)
-                                    for n in range(30)]) + '_' + str(current_user.username) + '_audioMessage'
-
-                newpath = os.path.join(current_app.config['UPLOAD_FOLDER_AUDIO'], filename + '.wav')
-                unique = os.path.isfile(newpath)
-
-            image_data = re.sub('^data:audio/.+;base64,', '', audio)
-            audio = base64.b64decode(image_data)
-            with open(newpath, 'wb') as f:
-                print('writing')
-                f.write(audio)
-                print('after')
-                f.close()
-                data['message'] = filename
+        data['username'] = current_user.username
         msg = MessagesData.insertMSG(**data)
         msg = json.dumps(msg)
         inicializApp.socketio.emit('my response', msg, room='chatroom', broadcast=True)
@@ -150,6 +187,7 @@ class Messages(Resource):
 
 class UpdateReactions(Resource):
     method_decorators = [token_required]
+
     def post(self, current_user):
         data = request.get_json()
         data['current_user'] = current_user
@@ -200,35 +238,13 @@ class UpdateSettings(Resource):
         if 'imageBase64' in data['UserData']:
             alert['version'] = 'profile_img'
             try:
-                print('image')
                 image_b64 = data['UserData']['imageBase64']
-                image_data = re.sub('^data:image/.+;base64,', '', image_b64)
-                imgdata = base64.b64decode(image_data)
+                update = decodebase64andsaveasfile(image_b64,'image', current_user)
                 print('decoded')
-                oldfilename = User.getUserData(current_user.username)
-                print('oldfilename', str(oldfilename['profile_img']))
-                oldpath = os.path.join(current_app.config['UPLOAD_FOLDER'], str(oldfilename['profile_img'] + '.jpg'))
-                filename = ''.join([random.choice(string.ascii_letters + string.digits)
-                                    for n in range(5)]) + '_' + str(current_user.username) + '_profile_img'
-                newpath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename + '.jpg')
-                print(newpath)
-                if not oldfilename['profile_img'] == 'icons8-person-90':
-                    os.renames(oldpath, newpath)
-                with open(newpath, 'wb') as f:
-                    f.write(imgdata)
-                    f.close()
-                kwargs = {
-                    'username': current_user.username,
-                    'profile_img': filename
-                }
-                update = Settings.UpdateSettings(**kwargs)
                 if update['changed']:
-                    while not os.path.exists(newpath):
-                        print("waiting")
-                        time.sleep(1)
                     alert['text'] = 'success'
                     alert['variant']= 'success'
-                    return jsonify({'update_data': {'profile_img': filename}, 'alert': alert})
+                    return jsonify({'update_data': {'profile_img': update['filename']}, 'alert': alert})
                 else:
                     alert['text'] = 'warning'
                     return jsonify({'update_data': {}, 'alert': alert})
