@@ -81,7 +81,7 @@ class User(Base):
         password = data.get('password')
         email = data.get('email')
         try:
-            session_.commit()
+
             s = User(username=username, password=password, email=email, confirmed=Column.default)
             session_.add(s)
             session_.flush()
@@ -93,6 +93,7 @@ class User(Base):
             html = render_template('confirm_email_template.html', confirm_url=confirm_url)
             subject = "Please confirm your email"
             send_email(email, subject, html)
+            session_.commit()
             return {'registrated': True}
         except exc.IntegrityError:
             session_.rollback()
@@ -180,30 +181,34 @@ class MessagesData(Base):
 
     @classmethod
     def insertMSG(cls, **kwargs):
-        msg = kwargs.get('message')
-        username = kwargs.get('username')
-        user_id = session_.query(User.id).filter(User.username == username).first()
-        user_id = userSchema().dump(user_id).data.get('id')
-        audio = kwargs.get('audio')
-        settings_id = session_.query(User.id).filter_by(username=username).first()
-        message = MessagesData(message=str(msg), username=str(username),
-                               audio=bool(audio), settings_id=int(settings_id.id),
-                               deleted=Column.default, user_id=user_id)
-        print(message)
-        session_.add(message)
-        session_.flush()
-        message_id = message.id
-        session_.commit()
-        userdata = User.getUserData(username)
-        kwargs['msg_id'] = message_id
-        kwargs['date'] = str(datetime.date.today())
-        kwargs['email'] = userdata['email']
-        kwargs['profile_img'] = userdata['profile_img']
-        kwargs['nickname'] = userdata['nickname']
-        kwargs['reakce'] = {'like': 0,
-                            'XD': 0,
-                            'angry': 0}
-        return kwargs
+        try:
+            msg = kwargs.get('message')
+            username = kwargs.get('username')
+            user_id = session_.query(User.id).filter(User.username == username).first()
+            user_id = userSchema().dump(user_id).data.get('id')
+            audio = kwargs.get('audio')
+            settings_id = session_.query(User.id).filter_by(username=username).first()
+            message = MessagesData(message=str(msg), username=str(username),
+                                   audio=bool(audio), settings_id=int(settings_id.id),
+                                   deleted=Column.default, user_id=user_id)
+            print(message)
+            session_.add(message)
+            session_.flush()
+            message_id = message.id
+            session_.commit()
+            userdata = User.getUserData(username)
+            kwargs['msg_id'] = message_id
+            kwargs['date'] = str(datetime.date.today())
+            kwargs['email'] = userdata['email']
+            kwargs['profile_img'] = userdata['profile_img']
+            kwargs['nickname'] = userdata['nickname']
+            kwargs['reakce'] = {'like': 0,
+                                'XD': 0,
+                                'angry': 0}
+            return kwargs
+        except exc.IntegrityError:
+            session_.rollback()
+
 
     @classmethod
     def deletemsg(cls, **kwargs):
