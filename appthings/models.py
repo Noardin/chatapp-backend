@@ -148,7 +148,7 @@ class MessagesData(Base):
 
     @classmethod
     def getALL(cls, user):
-        dates = session_.query(MessagesData.date.distinct().label('date'))
+        dates = session_.query(MessagesData.date.distinct().label('date')).order_by(cls.date)
         dates = [str(row.date) for row in dates.all()]
         print(dates)
         if not str(datetime.date.today()) in dates or len(dates) == 0:

@@ -18,4 +18,5 @@ class BaseConfig(object):
     UPLOAD_FOLDER_IMAGE_MESSAGE = join(dirname(realpath(__file__)), '../static/img/message_img')
     PASSWORD_CHANGE_KEY = 'asdfsdfsdf'
     SECURITY_PASSWORD_SALT = 'mujtajnyklic'
+    DEFAULT_PROFILE_IMG ='icons8-person-90'
     DATABASE_URI = 'postgres+psycopg2://ehlkmkyqzanmve:7f24b930611d412d9f55729e5e89822c1261fb3230489abfdb044ec3a1ad2897@ec2-54-75-245-196.eu-west-1.compute.amazonaws.com:5432/df4efm94h7l0nf'
