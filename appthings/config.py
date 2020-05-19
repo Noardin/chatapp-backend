@@ -11,7 +11,7 @@ class BaseConfig(object):
     MAIL_USE_TLS = False
     MAIL_USE_SSL = True
     MAIL_USERNAME = 'chatapp.assistant'
-    MAIL_PASSWORD = 'Mn_sXn88'
+    MAIL_PASSWORD = 'kickklop223355'
     CORS_HEADERS = 'Content-Type'
     UPLOAD_FOLDER = join(dirname(realpath(__file__)), '../static/img/profile_img')
     UPLOAD_FOLDER_AUDIO = join(dirname(realpath(__file__)), '../static/audio_messages')
