@@ -10,14 +10,12 @@ class BaseConfig(object):
     MAIL_PORT = 465
     MAIL_USE_TLS = False
     MAIL_USE_SSL = True
-    MAIL_USERNAME = 'chatapp.assistant'
-    MAIL_PASSWORD = 'kickklop223355'
     CORS_HEADERS = 'Content-Type'
     UPLOAD_FOLDER = join(dirname(realpath(__file__)), '../static/img/profile_img')
     UPLOAD_FOLDER_AUDIO = join(dirname(realpath(__file__)), '../static/audio_messages')
     UPLOAD_FOLDER_IMAGE_MESSAGE = join(dirname(realpath(__file__)), '../static/img/message_img')
     PASSWORD_CHANGE_KEY = 'asdfsdfsdf'
-    SENDGRID_API_KEY = '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'
+    SENDGRID_API_KEY = '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'
 
     SECURITY_PASSWORD_SALT = 'mujtajnyklic'
     DEFAULT_PROFILE_IMG ='icons8-person-90'
