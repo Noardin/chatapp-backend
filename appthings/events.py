@@ -1,15 +1,25 @@
 from appthings import inicializApp
 from flask import current_app
-from flask_mail import Message
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+import os
 
 
 def send_email(to, subject, template):
-    msg = Message(
-        subject,
-        recipients=[to],
-        html=template,
-        sender=current_app.config['MAIL_DEFAULT_SENDER']
+    message = Mail(
+        from_email=current_app.config['MAIL_DEFAULT_SENDER'],
+        to_emails=to,
+        subject=subject,
+        html_content=template
+
     )
-    inicializApp.mailn.send(msg)
+    try:
+        sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    except Exception as e:
+        print(e.message)
 
 

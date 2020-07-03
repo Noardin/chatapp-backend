@@ -40,13 +40,12 @@ def confirm_email(token):
 @api.route('/get/<file>')
 @cross_origin(origin='*', headers=['Content-Type', 'Authorization'])
 def get_image_by_URL(file):
-    img = send_from_directory('static','img/profile_img/'+file)
+    img = send_from_directory('static', 'img/profile_img/'+file)
     return img
 
 
 @api.route('/get_audio/<file>')
 @cross_origin(origin='*', headers=['Content-Type', 'Authorization'])
 def get_audio_by_URL(file):
-    img = send_from_directory('static','audio_messages/'+file )
-
+    img = send_from_directory('static', 'audio_messages/'+file )
     return img
