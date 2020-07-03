@@ -20,6 +20,6 @@ def send_email(to, subject, template):
         print(response.body)
         print(response.headers)
     except Exception as e:
-        print(e.message)
+        print(e)
 
 
