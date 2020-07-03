@@ -12,7 +12,7 @@ from sqlalchemy.orm import relationship, backref
 from flask import url_for, render_template, current_app
 from appthings.events import send_email
 import os
-engine = create_engine('postgres+psycopg2://ehlkmkyqzanmve:7f24b930611d412d9f55729e5e89822c1261fb3230489abfdb044ec3a1ad2897@ec2-54-75-245-196.eu-west-1.compute.amazonaws.com:5432/df4efm94h7l0nf', echo=True)
+engine = create_engine(os.environ.get['DATABASE_URI'], echo=True)
 session_ = scoped_session(sessionmaker(bind=engine))
 Base = declarative_base()
 ma = Marshmallow()
