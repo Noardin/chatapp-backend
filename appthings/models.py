@@ -12,7 +12,7 @@ from sqlalchemy.orm import relationship, backref
 from flask import url_for, render_template, current_app
 from appthings.events import send_email
 import os
-engine = create_engine(os.environ.get['DATABASE_URI'], echo=True)
+engine = create_engine(os.environ['DATABASE_URI'], echo=True)
 session_ = scoped_session(sessionmaker(bind=engine))
 Base = declarative_base()
 ma = Marshmallow()

@@ -16,4 +16,3 @@ class BaseConfig(object):
 
     SECURITY_PASSWORD_SALT = 'mujtajnyklic'
     DEFAULT_PROFILE_IMG ='icons8-person-90'
-    
